@@ -1,5 +1,7 @@
-import { getApperClient } from '@/services/apperClient';
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import { getApperClient } from "@/services/apperClient";
+import { getApperClient } from "@/services/api/commentService";
 
 class StoryService {
   constructor() {
@@ -379,9 +381,8 @@ class StoryService {
     } catch (error) {
       console.error("Error fetching trending stories:", error?.response?.data?.message || error);
       return [];
-    }
+}
   }
 }
 
 export const storyService = new StoryService();
-export const storyService = new StoryService()
