@@ -24,6 +24,7 @@ const Header = () => {
 const navItems = [
     { label: "Discover", path: "", exact: true },
     { label: "Library", path: "library" },
+    { label: "Following", path: "following" },
     { label: "Notifications", path: "notifications" },
     { label: "Write", path: "write" }
   ]
@@ -123,8 +124,8 @@ const navItems = [
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <ApperIcon 
-                      name={item.path === "" ? "Compass" : item.path === "library" ? "Library" : item.path === "notifications" ? "Bell" : "PenTool"} 
+<ApperIcon 
+                      name={item.path === "" ? "Compass" : item.path === "library" ? "Library" : item.path === "following" ? "Users" : item.path === "notifications" ? "Bell" : "PenTool"} 
                       size={20} 
                     />
                     {item.label}

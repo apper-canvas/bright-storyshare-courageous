@@ -6,6 +6,7 @@ import Layout from "@/components/organisms/Layout"
 const Discover = lazy(() => import("@/components/pages/Discover"))
 const Library = lazy(() => import("@/components/pages/Library"))
 const ReadingLists = lazy(() => import("@/components/pages/ReadingLists"))
+const Following = lazy(() => import("@/components/pages/Following"))
 const Write = lazy(() => import("@/components/pages/Write"))
 const StoryDetail = lazy(() => import("@/components/pages/StoryDetail"))
 const ChapterRead = lazy(() => import("@/components/pages/ChapterRead"))
@@ -50,6 +51,10 @@ const mainRoutes = [
   {
     path: "reading-lists",
     element: withSuspense(ReadingLists)()
+  },
+{
+    path: "following",
+    element: withSuspense(Following)()
   },
   {
     path: "write",
