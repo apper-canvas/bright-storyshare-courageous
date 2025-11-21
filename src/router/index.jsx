@@ -5,6 +5,7 @@ import Layout from "@/components/organisms/Layout"
 // Lazy load all page components
 const Discover = lazy(() => import("@/components/pages/Discover"))
 const Library = lazy(() => import("@/components/pages/Library"))
+const ReadingLists = lazy(() => import("@/components/pages/ReadingLists"))
 const Write = lazy(() => import("@/components/pages/Write"))
 const StoryDetail = lazy(() => import("@/components/pages/StoryDetail"))
 const ChapterRead = lazy(() => import("@/components/pages/ChapterRead"))
@@ -42,9 +43,13 @@ const mainRoutes = [
     index: true,
     element: withSuspense(Discover)()
   },
-  {
+{
     path: "library",
     element: withSuspense(Library)()
+  },
+  {
+    path: "reading-lists",
+    element: withSuspense(ReadingLists)()
   },
   {
     path: "write",

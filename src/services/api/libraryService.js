@@ -65,7 +65,20 @@ class LibraryService {
       return { ...item }
     }
     return null
-  }
 }
 
+  // Reading List Integration Methods
+  async getReadingListsForUser() {
+    // This method will be used when reading lists are integrated with library
+    // For now, it's a placeholder for future database integration
+    await this.delay()
+    return []
+  }
+
+  async addReadingListToLibrary(readingListData) {
+    // Future integration point for reading list library entries
+    await this.delay()
+    return readingListData
+  }
+}
 export const libraryService = new LibraryService()

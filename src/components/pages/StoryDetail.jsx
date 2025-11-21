@@ -4,6 +4,7 @@ import { storyService } from "@/services/api/storyService";
 import { chapterService } from "@/services/api/chapterService";
 import { libraryService } from "@/services/api/libraryService";
 import { authorFollowService } from "@/services/api/authorFollowService";
+import { readingListService } from "@/services/api/readingListService";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
@@ -20,31 +21,37 @@ const StoryDetail = () => {
   const navigate = useNavigate()
   const [story, setStory] = useState(null)
   const [chapters, setChapters] = useState([])
-  const [loading, setLoading] = useState(true)
+const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [isLiked, setIsLiked] = useState(false)
-const [likeCount, setLikeCount] = useState(0)
+  const [likeCount, setLikeCount] = useState(0)
   const [libraryStatus, setLibraryStatus] = useState(null)
   const [isFollowing, setIsFollowing] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
+  const [readingLists, setReadingLists] = useState([])
+  const [storyReadingLists, setStoryReadingLists] = useState([])
+  const [showReadingListDropdown, setShowReadingListDropdown] = useState(false)
+
   useEffect(() => {
     if (id) {
       loadStoryDetails()
     }
   }, [id])
 
-  const loadStoryDetails = async () => {
+const loadStoryDetails = async () => {
     try {
       setLoading(true)
       setError("")
-const [storyData, chaptersData] = await Promise.all([
+      const [storyData, chaptersData, readingListsData] = await Promise.all([
         storyService.getById(id),
-        chapterService.getByStoryId(id)
+        chapterService.getByStoryId(id),
+        readingListService.getAll()
       ])
       
       setStory(storyData)
       setChapters(chaptersData.filter(ch => ch.published))
       setLikeCount(storyData.likeCount)
+      setReadingLists(readingListsData)
 
       // Check follow status and follower count
       const followStatus = await authorFollowService.isFollowing(storyData.authorId)
@@ -57,6 +64,10 @@ const [storyData, chaptersData] = await Promise.all([
       if (mockLibraryItem) {
         setLibraryStatus(mockLibraryItem.status)
       }
+
+      // Check which reading lists contain this story
+      const storyLists = await readingListService.getListsContainingStory(id)
+      setStoryReadingLists(storyLists)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -71,7 +82,7 @@ const [storyData, chaptersData] = await Promise.all([
     toast.success(newLiked ? "Story liked!" : "Story unliked!")
   }
 
-  const handleAddToLibrary = async (status) => {
+const handleAddToLibrary = async (status) => {
     try {
       await libraryService.addToLibrary(id, status)
       setLibraryStatus(status)
@@ -88,6 +99,31 @@ const [storyData, chaptersData] = await Promise.all([
       toast.success("Removed from library")
     } catch (err) {
       toast.error("Failed to remove from library")
+    }
+  }
+
+  const handleAddToReadingList = async (listId) => {
+    try {
+      await readingListService.addStoryToList(listId, id)
+      const updatedLists = await readingListService.getListsContainingStory(id)
+      setStoryReadingLists(updatedLists)
+      const list = readingLists.find(l => l.Id === listId)
+      toast.success(`Added to "${list?.name}" reading list!`)
+      setShowReadingListDropdown(false)
+    } catch (err) {
+      toast.error("Failed to add to reading list")
+    }
+  }
+
+  const handleRemoveFromReadingList = async (listId) => {
+    try {
+      await readingListService.removeStoryFromList(listId, id)
+      const updatedLists = await readingListService.getListsContainingStory(id)
+      setStoryReadingLists(updatedLists)
+      const list = readingLists.find(l => l.Id === listId)
+      toast.success(`Removed from "${list?.name}" reading list!`)
+    } catch (err) {
+      toast.error("Failed to remove from reading list")
     }
   }
 const handleStartReading = () => {
@@ -172,23 +208,116 @@ const handleStartReading = () => {
                   {formatNumber(likeCount)}
                 </Button>
 
-                <div className="relative">
-                  <Button
-                    variant="secondary"
-                    className="inline-flex items-center gap-2"
-                    onClick={() => {
-                      // Mock dropdown behavior
-                      const status = libraryStatus ? null : "want-to-read"
-                      if (status) {
-                        handleAddToLibrary(status)
-                      } else {
-                        handleRemoveFromLibrary()
-                      }
-                    }}
-                  >
-                    <ApperIcon name="Plus" size={16} />
-                    {libraryStatus ? "In Library" : "Add to Library"}
-                  </Button>
+<div className="flex gap-3">
+                  <div className="relative">
+                    <Button
+                      variant="secondary"
+                      className="inline-flex items-center gap-2"
+                      onClick={() => {
+                        // Mock dropdown behavior
+                        const status = libraryStatus ? null : "want-to-read"
+                        if (status) {
+                          handleAddToLibrary(status)
+                        } else {
+                          handleRemoveFromLibrary()
+                        }
+                      }}
+                    >
+                      <ApperIcon name="Plus" size={16} />
+                      {libraryStatus ? "In Library" : "Add to Library"}
+                    </Button>
+                  </div>
+                  
+                  <div className="relative">
+                    <Button
+                      variant="outline"
+                      className="inline-flex items-center gap-2"
+                      onClick={() => setShowReadingListDropdown(!showReadingListDropdown)}
+                    >
+                      <ApperIcon name="List" size={16} />
+                      Reading Lists
+                      {storyReadingLists.length > 0 && (
+                        <span className="bg-accent text-primary text-xs px-2 py-0.5 rounded-full">
+                          {storyReadingLists.length}
+                        </span>
+                      )}
+                    </Button>
+                    
+                    {showReadingListDropdown && (
+                      <div className="absolute top-full mt-2 right-0 bg-background border border-surface rounded-lg shadow-elevated min-w-[250px] z-10">
+                        <div className="p-3 border-b border-surface">
+                          <h4 className="font-ui font-medium text-primary">Add to Reading List</h4>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto">
+                          {readingLists.length === 0 ? (
+                            <div className="p-4 text-center text-secondary font-ui text-sm">
+                              <p className="mb-3">No reading lists yet</p>
+                              <Button
+                                size="sm"
+                                onClick={() => navigate('/reading-lists')}
+                              >
+                                Create List
+                              </Button>
+                            </div>
+                          ) : (
+                            readingLists.map((list) => {
+                              const isInList = storyReadingLists.some(sl => sl.Id === list.Id)
+                              return (
+                                <div
+                                  key={list.Id}
+                                  className="p-3 hover:bg-surface/50 cursor-pointer border-b border-surface/50 last:border-b-0"
+                                  onClick={() => {
+                                    if (isInList) {
+                                      handleRemoveFromReadingList(list.Id)
+                                    } else {
+                                      handleAddToReadingList(list.Id)
+                                    }
+                                  }}
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <ApperIcon 
+                                          name={isInList ? "CheckCircle" : "Circle"} 
+                                          size={16} 
+                                          className={isInList ? "text-success" : "text-secondary"} 
+                                        />
+                                        <span className="font-ui font-medium text-primary">
+                                          {list.name}
+                                        </span>
+                                      </div>
+                                      {list.description && (
+                                        <p className="text-secondary font-ui text-xs ml-6 line-clamp-2">
+                                          {list.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-secondary font-ui ml-2">
+                                      {list.storyIds.length} stories
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            })
+                          )}
+                        </div>
+                        <div className="p-3 border-t border-surface">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => {
+                              setShowReadingListDropdown(false)
+                              navigate('/reading-lists')
+                            }}
+                          >
+                            <ApperIcon name="Plus" size={14} />
+                            Create New List
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

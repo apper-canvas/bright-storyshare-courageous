@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import StoryGrid from "@/components/organisms/StoryGrid"
 import Button from "@/components/atoms/Button"
 import Badge from "@/components/atoms/Badge"
@@ -7,30 +8,34 @@ import Loading from "@/components/ui/Loading"
 import Empty from "@/components/ui/Empty"
 import { libraryService } from "@/services/api/libraryService"
 import { storyService } from "@/services/api/storyService"
+import { readingListService } from "@/services/api/readingListService"
 import { cn } from "@/utils/cn"
 
 const Library = () => {
+const navigate = useNavigate()
   const [library, setLibrary] = useState([])
   const [stories, setStories] = useState([])
+  const [readingLists, setReadingLists] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState("currently-reading")
-
   useEffect(() => {
-    loadLibrary()
+loadLibrary()
   }, [])
 
   const loadLibrary = async () => {
     try {
       setLoading(true)
       setError("")
-      const [libraryData, storiesData] = await Promise.all([
+      const [libraryData, storiesData, readingListsData] = await Promise.all([
         libraryService.getAll(),
-        storyService.getAll()
+        storyService.getAll(),
+        readingListService.getAll()
       ])
       
       setLibrary(libraryData)
       setStories(storiesData)
+      setReadingLists(readingListsData)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -66,7 +71,7 @@ const Library = () => {
     }
   }
 
-  const tabs = [
+const tabs = [
     { 
       key: "currently-reading", 
       label: "Currently Reading", 
@@ -84,6 +89,12 @@ const Library = () => {
       label: "Completed", 
       icon: "CheckCircle",
       stories: getStoriesByStatus("completed")
+    },
+    {
+      key: "reading-lists",
+      label: "Reading Lists",
+      icon: "List",
+      lists: readingLists
     }
   ]
 
@@ -93,7 +104,7 @@ const Library = () => {
     return <Loading type="page" />
   }
 
-  return (
+return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
@@ -103,10 +114,19 @@ const Library = () => {
         <p className="text-lg text-secondary font-ui">
           Organize and track your reading journey
         </p>
+        <div className="flex justify-center">
+          <Button
+            onClick={() => navigate('/reading-lists')}
+            className="inline-flex items-center gap-2"
+          >
+            <ApperIcon name="Plus" size={16} />
+            Manage Reading Lists
+          </Button>
+        </div>
       </div>
 
-      {/* Library Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+{/* Library Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {tabs.map((tab) => (
           <div
             key={tab.key}
@@ -116,7 +136,7 @@ const Library = () => {
               <ApperIcon name={tab.icon} size={24} className="text-accent" />
             </div>
             <h3 className="font-display text-xl font-semibold text-primary mb-2">
-              {tab.stories.length}
+              {tab.key === 'reading-lists' ? tab.lists?.length || 0 : tab.stories?.length || 0}
             </h3>
             <p className="text-secondary font-ui text-sm">
               {tab.label}
@@ -147,9 +167,46 @@ const Library = () => {
         ))}
       </div>
 
-      {/* Tab Content */}
+{/* Tab Content */}
       <div className="space-y-6">
-        {activeTabData?.stories.length === 0 ? (
+        {activeTab === "reading-lists" ? (
+          <div className="space-y-6">
+            {readingLists.length === 0 ? (
+              <Empty 
+                type="library"
+                title="No reading lists yet"
+                description="Create custom reading lists to organize your stories by theme, mood, or any way you like."
+                actionLabel="Create Reading List"
+                onAction={() => navigate('/reading-lists')}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {readingLists.map((list) => (
+                  <div
+                    key={list.Id}
+                    className="bg-gradient-to-br from-surface to-surface/80 rounded-lg p-6 hover:shadow-card-hover transition-shadow cursor-pointer"
+                    onClick={() => navigate('/reading-lists')}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                        <ApperIcon name="List" size={24} className="text-accent" />
+                      </div>
+                      <Badge variant="genre" size="sm">
+                        {list.storyIds.length} stories
+                      </Badge>
+                    </div>
+                    <h3 className="font-display text-lg font-semibold text-primary mb-2">
+                      {list.name}
+                    </h3>
+                    <p className="text-secondary font-ui text-sm line-clamp-3">
+                      {list.description || "No description"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : activeTabData?.stories.length === 0 ? (
           <Empty 
             type="library"
             title={`No ${activeTabData.label.toLowerCase()} stories`}
