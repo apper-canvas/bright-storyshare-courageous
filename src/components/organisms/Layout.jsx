@@ -6,7 +6,7 @@ import Header from "@/components/organisms/Header";
 
 const Layout = () => {
   return (
-    <div className="min-h-screen bg-background">
+<div className="min-h-screen bg-background theme-transition">
       <Header />
       <main>
         <Outlet />

@@ -2,10 +2,11 @@ import React from "react"
 import { RouterProvider } from "react-router-dom"
 import { ToastContainer } from "react-toastify"
 import { router } from "@/router"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <RouterProvider router={router} />
       <ToastContainer
         position="top-right"
@@ -20,7 +21,7 @@ function App() {
         className="toast-container"
         style={{ zIndex: 9999 }}
       />
-    </>
+    </ThemeProvider>
   )
 }
 
