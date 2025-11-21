@@ -1,7 +1,8 @@
-import React from "react"
-import { Outlet } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
-import Header from "@/components/organisms/Header"
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Header from "@/components/organisms/Header";
 
 const Layout = () => {
   return (
@@ -11,7 +12,7 @@ const Layout = () => {
         <Outlet />
       </main>
       
-      <ToastContainer
+<ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -19,13 +20,11 @@ const Layout = () => {
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
-        draggable
         pauseOnHover
-        className="toast-container"
-        style={{ zIndex: 9999 }}
+        draggable
       />
     </div>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;
