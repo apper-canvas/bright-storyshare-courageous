@@ -1,7 +1,8 @@
-import { authorFollowService } from "./authorFollowService"
+import { authorFollowService } from "./authorFollowService";
 
 // Mock service for notifications functionality
-// In production, this would connect to a database with notifications table
+// Note: Since no notifications table exists in the database schema,
+// we'll continue using localStorage for notifications
 
 class NotificationService {
   constructor() {
@@ -45,13 +46,13 @@ class NotificationService {
               Id: Math.max(...notifications.map(n => n.Id), 0) + 1,
               type: 'new_chapter',
               title: 'New Chapter Published',
-              message: `${chapterData.authorName} published a new chapter "${chapterData.chapterTitle}" in "${chapterData.storyTitle}"`,
-              authorId,
-              authorName: chapterData.authorName,
-              storyId: chapterData.storyId,
-              storyTitle: chapterData.storyTitle,
-              chapterId: chapterData.chapterId,
-              chapterTitle: chapterData.chapterTitle,
+              message: `${chapterData.authorName_c} published a new chapter "${chapterData.title_c}" in "${chapterData.storyTitle_c}"`,
+              authorId_c: authorId,
+              authorName_c: chapterData.authorName_c,
+              storyId_c: chapterData.storyId_c,
+              storyTitle_c: chapterData.storyTitle_c,
+              chapterId_c: chapterData.chapterId_c,
+              chapterTitle_c: chapterData.title_c,
               read: false,
               createdAt: new Date().toISOString()
             }
@@ -167,4 +168,4 @@ class NotificationService {
   }
 }
 
-export const notificationService = new NotificationService()
+export const notificationService = new NotificationService();

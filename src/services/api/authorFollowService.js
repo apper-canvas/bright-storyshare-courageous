@@ -1,110 +1,198 @@
-// Mock service for author following functionality
-// In production, this would connect to a database with author_follows table
+import { getApperClient } from '@/services/apperClient';
+import { toast } from 'react-toastify';
 
 class AuthorFollowService {
   constructor() {
-    this.STORAGE_KEY = 'author_follows'
-    this.initializeStorage()
+    this.tableName = 'authorFollows_c';
   }
 
-  initializeStorage() {
-    if (!localStorage.getItem(this.STORAGE_KEY)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify([]))
-    }
-  }
-
-  getFollows() {
+  async follow(authorId, authorName, userId = "user1") {
     try {
-      return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]')
-    } catch (error) {
-      console.error('Failed to parse follows from storage:', error)
-      return []
-    }
-  }
+      // Check if already following
+      const isFollowing = await this.isFollowing(authorId);
+      if (isFollowing) {
+        return true;
+      }
 
-  saveFollows(follows) {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(follows))
-    } catch (error) {
-      console.error('Failed to save follows to storage:', error)
-    }
-  }
+      const apperClient = getApperClient();
+      const response = await apperClient.createRecord(this.tableName, {
+        records: [{
+          Name: `Follow ${authorName}`,
+          authorId_c: authorId,
+          authorName_c: authorName,
+          followedAt_c: new Date().toISOString()
+        }]
+      });
 
-  async follow(authorId, authorName) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const follows = this.getFollows()
-        const existingFollow = follows.find(f => f.authorId === authorId)
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return false;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
         
-        if (!existingFollow) {
-          const newFollow = {
-            Id: Math.max(...follows.map(f => f.Id), 0) + 1,
-            authorId,
-            authorName,
-            followedAt: new Date().toISOString()
-          }
-          follows.push(newFollow)
-          this.saveFollows(follows)
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} follows:`, failed);
+          failed.forEach(record => {
+            record.errors?.forEach(error => toast.error(`${error.fieldLabel}: ${error}`));
+            if (record.message) toast.error(record.message);
+          });
         }
         
-        resolve(true)
-      }, 300) // Simulate API delay
-    })
+        return successful.length > 0;
+      }
+
+    } catch (error) {
+      console.error("Error following author:", error?.response?.data?.message || error);
+      return false;
+    }
   }
 
   async unfollow(authorId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const follows = this.getFollows()
-        const filteredFollows = follows.filter(f => f.authorId !== authorId)
-        this.saveFollows(filteredFollows)
-        resolve(true)
-      }, 300) // Simulate API delay
-    })
+    try {
+      // Find the follow record first
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [{"field": {"Name": "Id"}}],
+        where: [{
+          "FieldName": "authorId_c",
+          "Operator": "EqualTo",
+          "Values": [authorId]
+        }]
+      });
+
+      if (!response.success || !response.data?.length) {
+        return true; // Already not following
+      }
+
+      // Delete the follow record
+      const deleteResponse = await apperClient.deleteRecord(this.tableName, {
+        RecordIds: [response.data[0].Id]
+      });
+
+      if (!deleteResponse.success) {
+        console.error(deleteResponse.message);
+        toast.error(deleteResponse.message);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error unfollowing author:", error?.response?.data?.message || error);
+      return false;
+    }
   }
 
   async isFollowing(authorId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const follows = this.getFollows()
-        const isFollowing = follows.some(f => f.authorId === authorId)
-        resolve(isFollowing)
-      }, 100)
-    })
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [{"field": {"Name": "Id"}}],
+        where: [{
+          "FieldName": "authorId_c",
+          "Operator": "EqualTo",
+          "Values": [authorId]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        return false;
+      }
+
+      return (response.data?.length || 0) > 0;
+    } catch (error) {
+      console.error("Error checking if following:", error?.response?.data?.message || error);
+      return false;
+    }
   }
 
   async getFollowedAuthors() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const follows = this.getFollows()
-        resolve([...follows])
-      }, 200)
-    })
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "authorId_c"}},
+          {"field": {"Name": "authorName_c"}},
+          {"field": {"Name": "followedAt_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        orderBy: [{"fieldName": "followedAt_c", "sorttype": "DESC"}]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching followed authors:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getFollowerCount(authorId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock follower count - in production this would be a proper count from database
-        const follows = this.getFollows()
-        const isFollowing = follows.some(f => f.authorId === authorId)
-        // Return a mock count that changes based on follow status
-        const baseCount = Math.floor(Math.random() * 100) + 10
-        const count = isFollowing ? baseCount + 1 : baseCount
-        resolve(count)
-      }, 100)
-    })
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [{"field": {"Name": "Id"}}],
+        where: [{
+          "FieldName": "authorId_c",
+          "Operator": "EqualTo",
+          "Values": [authorId]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        return 0;
+      }
+
+      return response.data?.length || 0;
+    } catch (error) {
+      console.error("Error fetching follower count:", error?.response?.data?.message || error);
+      return 0;
+    }
   }
 
   async getFollowersForAuthor(authorId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const follows = this.getFollows()
-        const followers = follows.filter(f => f.authorId === authorId)
-        resolve([...followers])
-      }, 200)
-    })
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "authorId_c"}},
+          {"field": {"Name": "authorName_c"}},
+          {"field": {"Name": "followedAt_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        where: [{
+          "FieldName": "authorId_c",
+          "Operator": "EqualTo",
+          "Values": [authorId]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching followers for author:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 }
 
-export const authorFollowService = new AuthorFollowService()
+export const authorFollowService = new AuthorFollowService();

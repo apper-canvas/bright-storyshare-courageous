@@ -1,84 +1,273 @@
-import libraryData from "@/services/mockData/library.json"
+import { getApperClient } from '@/services/apperClient';
+import { toast } from 'react-toastify';
 
 class LibraryService {
   constructor() {
-    this.library = [...libraryData]
-    this.delay = () => new Promise(resolve => setTimeout(resolve, 200))
+    this.tableName = 'library_c';
   }
 
   async getAll() {
-    await this.delay()
-    return [...this.library]
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "lastReadChapterId_c"}},
+          {"field": {"Name": "lastReadPosition_c"}},
+          {"field": {"Name": "addedAt_c"}},
+          {"field": {"Name": "userId_c"}},
+          {"field": {"Name": "storyId_c"}},
+          {"field": {"Name": "CreatedOn"}},
+          {"field": {"Name": "ModifiedOn"}}
+        ]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching library:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getByStoryId(storyId) {
-    await this.delay()
-    return this.library.find(item => item.storyId === parseInt(storyId))
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "lastReadChapterId_c"}},
+          {"field": {"Name": "lastReadPosition_c"}},
+          {"field": {"Name": "addedAt_c"}},
+          {"field": {"Name": "userId_c"}},
+          {"field": {"Name": "storyId_c"}},
+          {"field": {"Name": "CreatedOn"}},
+          {"field": {"Name": "ModifiedOn"}}
+        ],
+        where: [{
+          "FieldName": "storyId_c",
+          "Operator": "EqualTo",
+          "Values": [parseInt(storyId)]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      return response.data?.[0] || null;
+    } catch (error) {
+      console.error("Error fetching library by story:", error?.response?.data?.message || error);
+      return null;
+    }
   }
 
   async getByStatus(status) {
-    await this.delay()
-    return this.library.filter(item => item.status === status)
+    try {
+      const apperClient = getApperClient();
+      const response = await apperClient.fetchRecords(this.tableName, {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "lastReadChapterId_c"}},
+          {"field": {"Name": "lastReadPosition_c"}},
+          {"field": {"Name": "addedAt_c"}},
+          {"field": {"Name": "userId_c"}},
+          {"field": {"Name": "storyId_c"}},
+          {"field": {"Name": "CreatedOn"}},
+          {"field": {"Name": "ModifiedOn"}}
+        ],
+        where: [{
+          "FieldName": "status_c",
+          "Operator": "EqualTo",
+          "Values": [status]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching library by status:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
-  async addToLibrary(storyId, status = "want-to-read") {
-    await this.delay()
-    
-    // Remove existing entry if it exists
-    this.library = this.library.filter(item => item.storyId !== parseInt(storyId))
-    
-    const newEntry = {
-      userId: "user1", // Mock user ID
-      storyId: parseInt(storyId),
-      status,
-      lastReadChapterId: null,
-      lastReadPosition: 0,
-      addedAt: new Date().toISOString()
+  async addToLibrary(storyId, status = "want-to-read", userId = "user1") {
+    try {
+      // First check if entry exists and remove it
+      await this.removeFromLibrary(storyId);
+
+      const apperClient = getApperClient();
+      const response = await apperClient.createRecord(this.tableName, {
+        records: [{
+          Name: `Library Entry - Story ${storyId}`,
+          status_c: status,
+          lastReadChapterId_c: null,
+          lastReadPosition_c: 0,
+          addedAt_c: new Date().toISOString(),
+          userId_c: userId,
+          storyId_c: parseInt(storyId)
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} library entries:`, failed);
+          failed.forEach(record => {
+            record.errors?.forEach(error => toast.error(`${error.fieldLabel}: ${error}`));
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        return successful[0]?.data || null;
+      }
+
+    } catch (error) {
+      console.error("Error adding to library:", error?.response?.data?.message || error);
+      return null;
     }
-    
-    this.library.push(newEntry)
-    return { ...newEntry }
   }
 
   async removeFromLibrary(storyId) {
-    await this.delay()
-    this.library = this.library.filter(item => item.storyId !== parseInt(storyId))
-    return true
+    try {
+      // First find the library entry
+      const entry = await this.getByStoryId(storyId);
+      if (!entry) return true;
+
+      const apperClient = getApperClient();
+      const response = await apperClient.deleteRecord(this.tableName, {
+        RecordIds: [entry.Id]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error removing from library:", error?.response?.data?.message || error);
+      return false;
+    }
   }
 
   async updateStatus(storyId, status) {
-    await this.delay()
-    const item = this.library.find(item => item.storyId === parseInt(storyId))
-    if (item) {
-      item.status = status
-      return { ...item }
+    try {
+      const entry = await this.getByStoryId(storyId);
+      if (!entry) return null;
+
+      const apperClient = getApperClient();
+      const response = await apperClient.updateRecord(this.tableName, {
+        records: [{
+          Id: entry.Id,
+          status_c: status
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} library entries:`, failed);
+          failed.forEach(record => {
+            record.errors?.forEach(error => toast.error(`${error.fieldLabel}: ${error}`));
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        return successful[0]?.data || null;
+      }
+
+    } catch (error) {
+      console.error("Error updating library status:", error?.response?.data?.message || error);
+      return null;
     }
-    return null
   }
 
   async updateProgress(storyId, chapterId, position = 0) {
-    await this.delay()
-    const item = this.library.find(item => item.storyId === parseInt(storyId))
-    if (item) {
-      item.lastReadChapterId = parseInt(chapterId)
-      item.lastReadPosition = position
-      return { ...item }
-    }
-    return null
-}
+    try {
+      const entry = await this.getByStoryId(storyId);
+      if (!entry) return null;
 
-  // Reading List Integration Methods
+      const apperClient = getApperClient();
+      const response = await apperClient.updateRecord(this.tableName, {
+        records: [{
+          Id: entry.Id,
+          lastReadChapterId_c: parseInt(chapterId),
+          lastReadPosition_c: position
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} library entries:`, failed);
+          failed.forEach(record => {
+            record.errors?.forEach(error => toast.error(`${error.fieldLabel}: ${error}`));
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        return successful[0]?.data || null;
+      }
+
+    } catch (error) {
+      console.error("Error updating library progress:", error?.response?.data?.message || error);
+      return null;
+    }
+  }
+
   async getReadingListsForUser() {
-    // This method will be used when reading lists are integrated with library
-    // For now, it's a placeholder for future database integration
-    await this.delay()
-    return []
+    // Placeholder for future reading list integration
+    return [];
   }
 
   async addReadingListToLibrary(readingListData) {
-    // Future integration point for reading list library entries
-    await this.delay()
-    return readingListData
+    // Placeholder for future reading list integration
+    return readingListData;
   }
 }
-export const libraryService = new LibraryService()
+
+export const libraryService = new LibraryService();
