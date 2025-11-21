@@ -1,0 +1,222 @@
+[
+  {
+    "Id": 1,
+    "chapterId": 1,
+    "userId": "user123",
+    "userName": "BookLover_92",
+    "content": "This is such a fascinating concept! The idea of a library between life and death is beautifully written. I can't wait to see where this goes.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "likeCount": 12
+  },
+  {
+    "Id": 2,
+    "chapterId": 1,
+    "userId": "user456",
+    "userName": "StorySeeker",
+    "content": "The imagery is incredible! I can almost see the glowing books stretching infinitely. Your description really draws me in.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-15T14:20:00Z",
+    "likeCount": 8
+  },
+  {
+    "Id": 3,
+    "chapterId": 1,
+    "userId": "user789",
+    "userName": "PhilosophyFan",
+    "content": "I love how this explores the concept of alternate lives and choices. Very thought-provoking premise!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-16T09:15:00Z",
+    "likeCount": 15
+  },
+  {
+    "Id": 4,
+    "chapterId": 1,
+    "userId": "user234",
+    "userName": "ReaderExtraordinaire",
+    "content": "Totally agree! It reminds me a bit of 'The Seven Husbands of Evelyn Hugo' in how it makes you think about life choices.",
+    "parentCommentId": 3,
+    "createdAt": "2024-01-16T11:45:00Z",
+    "likeCount": 5
+  },
+  {
+    "Id": 5,
+    "chapterId": 2,
+    "userId": "user567",
+    "userName": "FantasyAddict",
+    "content": "Mrs. Elm as a guide is perfect! The way you've brought her back as a familiar, comforting presence is really touching.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-16T12:30:00Z",
+    "likeCount": 9
+  },
+  {
+    "Id": 6,
+    "chapterId": 2,
+    "userId": "user890",
+    "userName": "EmotionalReader",
+    "content": "I'm already getting teary-eyed thinking about all the lives Nora could explore. This is going to be an emotional journey!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-16T15:45:00Z",
+    "likeCount": 11
+  },
+  {
+    "Id": 7,
+    "chapterId": 3,
+    "userId": "user345",
+    "userName": "RomanceReader",
+    "content": "Love the setup! Sarah's empty feeling despite her successful life is so relatable. Can't wait to see how Scotland changes her.",
+    "parentCommentId": null,
+    "createdAt": "2024-02-01T16:20:00Z",
+    "likeCount": 14
+  },
+  {
+    "Id": 8,
+    "chapterId": 3,
+    "userId": "user678",
+    "userName": "HighlandsFan",
+    "content": "As someone who's been to the Scottish Highlands, you've captured the atmosphere perfectly! I can smell the heather already.",
+    "parentCommentId": null,
+    "createdAt": "2024-02-02T08:10:00Z",
+    "likeCount": 7
+  },
+  {
+    "Id": 9,
+    "chapterId": 4,
+    "userId": "user901",
+    "userName": "NatureNerd",
+    "content": "The description of the train journey and the changing landscape is beautiful. I love how the environment reflects Sarah's internal journey.",
+    "parentCommentId": null,
+    "createdAt": "2024-02-03T13:25:00Z",
+    "likeCount": 10
+  },
+  {
+    "Id": 10,
+    "chapterId": 4,
+    "userId": "user123",
+    "userName": "BookLover_92",
+    "content": "Sarah turning off her phone is such a powerful moment! Sometimes we need to disconnect to reconnect with ourselves.",
+    "parentCommentId": null,
+    "createdAt": "2024-02-03T17:50:00Z",
+    "likeCount": 13
+  },
+  {
+    "Id": 11,
+    "chapterId": 5,
+    "userId": "user456",
+    "userName": "SciFiEnthusiast",
+    "content": "The opening with Earth's final moments is heartbreaking but hopeful. Captain Chen feels like a strong, compelling character already.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-28T18:30:00Z",
+    "likeCount": 16
+  },
+  {
+    "Id": 12,
+    "chapterId": 5,
+    "userId": "user789",
+    "userName": "SpaceExplorer",
+    "content": "The weight of responsibility on Maya's shoulders is palpable. 50,000 lives depending on her decisions - what pressure!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-29T10:15:00Z",
+    "likeCount": 12
+  },
+  {
+    "Id": 13,
+    "chapterId": 6,
+    "userId": "user234",
+    "userName": "AlienHunter",
+    "content": "First contact! This gave me chills. The description of the alien construct as a crystalline flower is stunning.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-30T20:45:00Z",
+    "likeCount": 18
+  },
+  {
+    "Id": 14,
+    "chapterId": 6,
+    "userId": "user567",
+    "userName": "ContactFan",
+    "content": "I love how you're handling first contact - the wonder and terror of encountering something completely alien. Well done!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-31T09:20:00Z",
+    "likeCount": 14
+  },
+  {
+    "Id": 15,
+    "chapterId": 7,
+    "userId": "user890",
+    "userName": "WitchyReader",
+    "content": "Salem Academy sounds incredible! The Gothic architecture description really sets the mood. And that entrance - very mysterious!",
+    "parentCommentId": null,
+    "createdAt": "2024-02-14T11:45:00Z",
+    "likeCount": 11
+  },
+  {
+    "Id": 16,
+    "chapterId": 7,
+    "userId": "user345",
+    "userName": "TeenFictionFan",
+    "content": "Willow's story is already gripping! The mysterious woman in purple robes has me intrigued. Classic witch school vibes!",
+    "parentCommentId": null,
+    "createdAt": "2024-02-14T15:30:00Z",
+    "likeCount": 9
+  },
+  {
+    "Id": 17,
+    "chapterId": 8,
+    "userId": "user678",
+    "userName": "MagicLover",
+    "content": "Luna seems like she'll be a great character! The casual way she reveals Willow's heritage is perfect. And those multicolored flames!",
+    "parentCommentId": null,
+    "createdAt": "2024-02-16T12:20:00Z",
+    "likeCount": 13
+  },
+  {
+    "Id": 18,
+    "chapterId": 8,
+    "userId": "user901",
+    "userName": "UrbanFantasyAddict",
+    "content": "The world-building is fantastic! I love how matter-of-fact Luna is about magic while Willow is still processing everything.",
+    "parentCommentId": null,
+    "createdAt": "2024-02-16T16:55:00Z",
+    "likeCount": 8
+  },
+  {
+    "Id": 19,
+    "chapterId": 9,
+    "userId": "user123",
+    "userName": "ArtMystery",
+    "content": "The tension is building perfectly! Emma discovering the forgery and then the surprise visit from the detective - I'm hooked!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-05T19:25:00Z",
+    "likeCount": 15
+  },
+  {
+    "Id": 20,
+    "chapterId": 9,
+    "userId": "user456",
+    "userName": "MysteryBuff",
+    "content": "Love a good art forgery mystery! The way you describe Emma's expertise really makes her feel authentic as a curator.",
+    "parentCommentId": null,
+    "createdAt": "2024-01-06T08:40:00Z",
+    "likeCount": 10
+  },
+  {
+    "Id": 21,
+    "chapterId": 10,
+    "userId": "user789",
+    "userName": "ThrillerAddict",
+    "content": "The museum after hours scene is so atmospheric! And that cliffhanger - someone she trusted! I need to know who it is!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-07T21:10:00Z",
+    "likeCount": 17
+  },
+  {
+    "Id": 22,
+    "chapterId": 10,
+    "userId": "user234",
+    "userName": "PlotTwistLover",
+    "content": "The betrayal element is perfectly executed. Having it be someone with access makes it even more chilling. Great chapter!",
+    "parentCommentId": null,
+    "createdAt": "2024-01-08T07:35:00Z",
+    "likeCount": 12
+  }
+]
