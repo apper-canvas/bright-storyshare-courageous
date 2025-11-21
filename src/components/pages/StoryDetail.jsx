@@ -271,9 +271,12 @@ const handleStartReading = () => {
                   className="mr-1"
                 />
                 {isFollowing ? "Following" : "Follow"}
-              </Button>
+</Button>
             </div>
-</div>
+          </div>
+
+          {/* Genres and Status */}
+          <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               {story.genres.map((genre) => (
                 <Badge
