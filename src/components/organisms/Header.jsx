@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
-import SettingsModal from "@/components/organisms/SettingsModal";
 import { cn } from "@/utils/cn";
 
 // Temporary NotificationBadge component until proper implementation
@@ -13,7 +12,6 @@ const NotificationBadge = () => (
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -84,14 +82,6 @@ const navItems = [
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
-<Button
-              variant="ghost"
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 hover:bg-surface transition-colors"
-              title="Settings"
-            >
-              <ApperIcon name="Settings" size={20} />
-            </Button>
             <Button
               variant="primary"
               onClick={() => navigate("/write/new")}
@@ -146,18 +136,7 @@ const navItems = [
               ))}
             </nav>
             
-<div className="mt-6 pt-4 border-t border-surface space-y-3">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsSettingsOpen(true)
-                  setIsMenuOpen(false)
-                }}
-                className="w-full inline-flex items-center justify-center gap-2 text-primary hover:bg-surface"
-              >
-                <ApperIcon name="Settings" size={16} />
-                Settings
-              </Button>
+            <div className="mt-6 pt-4 border-t border-surface">
               <Button
                 variant="primary"
                 onClick={() => {
@@ -172,12 +151,7 @@ const navItems = [
             </div>
           </div>
         )}
-</div>
-      
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-      />
+      </div>
     </header>
   )
 }
