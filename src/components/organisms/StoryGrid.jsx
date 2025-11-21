@@ -1,4 +1,39 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
+import { notificationService } from "@/services/api/notificationService"
+
+// Notification Badge Component
+const NotificationBadge = () => {
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    const loadUnreadCount = async () => {
+      try {
+        const count = await notificationService.getUnreadCount()
+        setUnreadCount(count)
+      } catch (error) {
+        console.error('Failed to load notification count:', error)
+      }
+    }
+
+    loadUnreadCount()
+    
+    // Set up interval to check for new notifications
+    const interval = setInterval(loadUnreadCount, 30000) // Check every 30 seconds
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  if (unreadCount === 0) return null
+
+  return (
+    <span className="absolute -top-1 -right-1 bg-error text-white text-xs font-bold rounded-full min-w-5 h-5 flex items-center justify-center px-1">
+      {unreadCount > 99 ? '99+' : unreadCount}
+    </span>
+  )
+}
+
+// Export for use in Header
+export { NotificationBadge }
 import StoryCard from "@/components/molecules/StoryCard"
 import Loading from "@/components/ui/Loading"
 import Empty from "@/components/ui/Empty"

@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Badge from "@/components/atoms/Badge"
-import Avatar from "@/components/atoms/Avatar"
-import ChapterListItem from "@/components/molecules/ChapterListItem"
-import Loading from "@/components/ui/Loading"
-import Empty from "@/components/ui/Empty"
-import ErrorView from "@/components/ui/ErrorView"
-import { storyService } from "@/services/api/storyService"
-import { chapterService } from "@/services/api/chapterService"
-import { libraryService } from "@/services/api/libraryService"
-import { formatDate, formatNumber, getGenreColor, calculateReadingTime } from "@/utils/formatters"
-import { toast } from "react-toastify"
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { storyService } from "@/services/api/storyService";
+import { chapterService } from "@/services/api/chapterService";
+import { libraryService } from "@/services/api/libraryService";
+import { authorFollowService } from "@/services/api/authorFollowService";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import Avatar from "@/components/atoms/Avatar";
+import Badge from "@/components/atoms/Badge";
+import ChapterListItem from "@/components/molecules/ChapterListItem";
+import { calculateReadingTime, formatDate, formatNumber, getGenreColor } from "@/utils/formatters";
 
 const StoryDetail = () => {
   const { id } = useParams()
@@ -22,9 +23,10 @@ const StoryDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [isLiked, setIsLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
+const [likeCount, setLikeCount] = useState(0)
   const [libraryStatus, setLibraryStatus] = useState(null)
-
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followerCount, setFollowerCount] = useState(0)
   useEffect(() => {
     if (id) {
       loadStoryDetails()
@@ -35,7 +37,7 @@ const StoryDetail = () => {
     try {
       setLoading(true)
       setError("")
-      const [storyData, chaptersData] = await Promise.all([
+const [storyData, chaptersData] = await Promise.all([
         storyService.getById(id),
         chapterService.getByStoryId(id)
       ])
@@ -43,6 +45,12 @@ const StoryDetail = () => {
       setStory(storyData)
       setChapters(chaptersData.filter(ch => ch.published))
       setLikeCount(storyData.likeCount)
+
+      // Check follow status and follower count
+      const followStatus = await authorFollowService.isFollowing(storyData.authorId)
+      const followCount = await authorFollowService.getFollowerCount(storyData.authorId)
+      setIsFollowing(followStatus)
+      setFollowerCount(followCount)
 
       // Mock library status check
       const mockLibraryItem = await libraryService.getByStoryId(id)
@@ -82,10 +90,28 @@ const StoryDetail = () => {
       toast.error("Failed to remove from library")
     }
   }
-
-  const handleStartReading = () => {
+const handleStartReading = () => {
     if (chapters.length > 0) {
       navigate(`/story/${id}/chapter/${chapters[0].Id}`)
+    }
+  }
+
+  const handleFollowToggle = async () => {
+    try {
+      if (isFollowing) {
+        await authorFollowService.unfollow(story.authorId)
+        setIsFollowing(false)
+        setFollowerCount(prev => Math.max(0, prev - 1))
+        toast.success(`Unfollowed ${story.authorName}`)
+      } else {
+        await authorFollowService.follow(story.authorId, story.authorName)
+        setIsFollowing(true)
+        setFollowerCount(prev => prev + 1)
+        toast.success(`Following ${story.authorName}`)
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error)
+      toast.error('Failed to update follow status')
     }
   }
 
@@ -219,17 +245,35 @@ const StoryDetail = () => {
             </h1>
             
             <div className="flex items-center gap-4">
-              <Avatar name={story.authorName} size="default" />
-              <div>
+<Avatar name={story.authorName} size="default" />
+              <div className="flex-1">
                 <p className="font-ui font-semibold text-primary">
                   {story.authorName}
                 </p>
                 <p className="text-sm text-secondary font-ui">
                   Published {formatDate(story.createdAt)}
                 </p>
+                {followerCount > 0 && (
+                  <p className="text-xs text-secondary font-ui">
+                    {formatNumber(followerCount)} followers
+                  </p>
+                )}
               </div>
+              <Button
+                variant={isFollowing ? "secondary" : "primary"}
+                size="sm"
+                onClick={handleFollowToggle}
+                className="shrink-0"
+              >
+                <ApperIcon 
+                  name={isFollowing ? "UserMinus" : "UserPlus"} 
+                  size={16} 
+                  className="mr-1"
+                />
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
             </div>
-
+</div>
             <div className="flex flex-wrap gap-2">
               {story.genres.map((genre) => (
                 <Badge
