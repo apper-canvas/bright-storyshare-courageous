@@ -29,13 +29,17 @@ const Root = () => {
     }
   };
 
-  const initializeAuth = async () => {
+const initializeAuth = async () => {
     try {
       if (!window.ApperSDK) {
         throw new Error('ApperSDK not loaded');
       }
 
-const { ApperUI } = window.ApperSDK;
+      const { ApperUI } = window.ApperSDK;
+      
+      if (!ApperUI || typeof ApperUI.init !== 'function') {
+        throw new Error('ApperUI not available or init method missing');
+      }
       
       ApperUI.init({
         onSuccess: (userData) => {
