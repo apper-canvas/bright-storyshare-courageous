@@ -35,9 +35,9 @@ const Root = () => {
         throw new Error('ApperSDK not loaded');
       }
 
-      const { ApperUI } = window.ApperSDK;
+const { ApperUI } = window.ApperSDK;
       
-      ApperUI.initialize({
+      ApperUI.init({
         onSuccess: (userData) => {
           console.log('Auth success:', userData);
           dispatch(setUser(userData));
