@@ -1,0 +1,154 @@
+{
+  "/": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Homepage is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/library": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Library requires authentication", 
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login",
+      "excludeRedirectQuery": false
+    }
+  },
+  "/reading-lists": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Reading lists require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/following": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Following page requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/write": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Writing features require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/write/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "All writing routes require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/story/*/edit": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Story editing requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/notifications": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Notifications require authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/login": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Login page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/signup": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Signup page is public", 
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/callback": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Auth callback is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/error": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Error page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  }
+}

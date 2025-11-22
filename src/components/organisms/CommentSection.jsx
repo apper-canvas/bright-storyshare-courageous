@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Textarea from "@/components/atoms/Textarea"
-import CommentItem from "@/components/molecules/CommentItem"
-import Loading from "@/components/ui/Loading"
-import Empty from "@/components/ui/Empty"
-import ErrorView from "@/components/ui/ErrorView"
-import { commentService } from "@/services/api/commentService"
-
+import React, { useEffect, useState } from "react";
+import { commentService } from "@/services/api/commentService";
+import { useAuth } from "@/layouts/Root";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import ErrorView from "@/components/ui/ErrorView";
+import Empty from "@/components/ui/Empty";
+import Textarea from "@/components/atoms/Textarea";
+import Button from "@/components/atoms/Button";
+import CommentItem from "@/components/molecules/CommentItem";
 const CommentSection = ({ chapterId }) => {
+  const { user } = useAuth()
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -39,11 +40,11 @@ const CommentSection = ({ chapterId }) => {
 
     try {
       setSubmitting(true)
-      const comment = await commentService.create({
+const comment = await commentService.create({
         chapterId,
         content: newComment,
-        userName: "Reader" + Math.floor(Math.random() * 1000), // Mock user
-        userId: "user" + Math.floor(Math.random() * 1000)
+        userName: user?.firstName || "Anonymous User",
+        userId: user?.userId || "anonymous"
       })
       
       setComments(prev => [comment, ...prev])
@@ -57,12 +58,12 @@ const CommentSection = ({ chapterId }) => {
 
   const handleReply = async (parentCommentId, content) => {
     try {
-      const reply = await commentService.create({
+const reply = await commentService.create({
         chapterId,
         content,
         parentCommentId,
-        userName: "Reader" + Math.floor(Math.random() * 1000), // Mock user
-        userId: "user" + Math.floor(Math.random() * 1000)
+        userName: user?.firstName || "Anonymous User",
+        userId: user?.userId || "anonymous"
       })
       
       setComments(prev => prev.map(comment => {

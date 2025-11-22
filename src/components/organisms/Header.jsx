@@ -3,18 +3,20 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
+import { useAuth } from '@/layouts/Root'
 import { cn } from "@/utils/cn";
 
-// Temporary NotificationBadge component until proper implementation
+// Notification badge component (placeholder)
 const NotificationBadge = () => (
-  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-);
-
+  <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+    3
+  </span>
+)
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-
+  const { user, isAuthenticated, logout } = useAuth()
   const handleSearch = (query) => {
     if (query.trim()) {
       navigate(`/?search=${encodeURIComponent(query)}`)
@@ -81,16 +83,37 @@ const navItems = [
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          {/* Desktop Actions */}
+{/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button
-              variant="primary"
-              onClick={() => navigate("/write/new")}
-              className="inline-flex items-center gap-2"
-            >
-              <ApperIcon name="Plus" size={16} />
-              New Story
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/write/new")}
+                  className="inline-flex items-center gap-2"
+                >
+                  <ApperIcon name="Plus" size={16} />
+                  New Story
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={logout}
+                  className="inline-flex items-center gap-2"
+                >
+                  <ApperIcon name="LogOut" size={16} />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={() => navigate("/login")}
+                className="inline-flex items-center gap-2"
+              >
+                <ApperIcon name="LogIn" size={16} />
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -137,18 +160,45 @@ const navItems = [
               ))}
             </nav>
             
-            <div className="mt-6 pt-4 border-t border-surface">
-              <Button
-                variant="primary"
-                onClick={() => {
-                  navigate("/write/new")
-                  setIsMenuOpen(false)
-                }}
-                className="w-full inline-flex items-center justify-center gap-2"
-              >
-                <ApperIcon name="Plus" size={16} />
-                New Story
-              </Button>
+<div className="mt-6 pt-4 border-t border-surface space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      navigate("/write/new")
+                      setIsMenuOpen(false)
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2"
+                  >
+                    <ApperIcon name="Plus" size={16} />
+                    New Story
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      logout()
+                      setIsMenuOpen(false)
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2"
+                  >
+                    <ApperIcon name="LogOut" size={16} />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    navigate("/login")
+                    setIsMenuOpen(false)
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2"
+                >
+                  <ApperIcon name="LogIn" size={16} />
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         )}
