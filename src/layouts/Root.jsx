@@ -1,111 +1,114 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { setUser, clearUser, setInitialized } from '@/store/userSlice'
-import { getRouteConfig, verifyRouteAccess } from '@/router/route.utils'
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getRouteConfig, verifyRouteAccess } from "@/router/route.utils";
+import { clearUser, setInitialized, setUser } from "@/store/userSlice";
 
-// Create AuthContext
-const AuthContext = createContext()
+// Auth Context for sharing authentication state and methods
+const AuthContext = createContext(null)
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthContext.Provider')
-  }
-  return context
-}
-
-const Root = () => {
+function Root() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isInitialized } = useSelector((state) => state.user)
   
+  // Local state for controlling loading spinner visibility
   const [authInitialized, setAuthInitialized] = useState(false)
 
-  // Initialize authentication once
+  // Initialize authentication on app start
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const { ApperUI } = window.ApperSDK || {}
-        
-        if (!ApperUI) {
-          console.warn('ApperSDK not loaded')
+        // Wait for ApperSDK to load
+        let attempts = 0
+        while (!window.ApperSDK && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          attempts++
+        }
+
+        if (!window.ApperSDK) {
+          console.error('ApperSDK failed to load after 5 seconds')
           setAuthInitialized(true)
-          dispatch(setInitialized(true))
           return
         }
 
-        // Setup ApperUI with callbacks
+        const { ApperUI } = window.ApperSDK
+
+        // Set up authentication handlers
         ApperUI.onSuccess = (user) => {
           console.log('Auth success:', user)
           dispatch(setUser(user))
           dispatch(setInitialized(true))
           handleNavigation(user)
+          setAuthInitialized(true)
         }
 
         ApperUI.onError = (error) => {
           console.error('Auth error:', error)
           dispatch(clearUser())
           dispatch(setInitialized(true))
+          setAuthInitialized(true)
         }
 
-        // Check if user is already authenticated
-        const currentUser = ApperUI.getCurrentUser?.() || null
-        if (currentUser) {
-          dispatch(setUser(currentUser))
-        } else {
-          dispatch(clearUser())
-        }
+        // Initialize authentication
+        await ApperUI.init()
         
-        dispatch(setInitialized(true))
-        setAuthInitialized(true)
+        // If no user after init, still set initialized
+        if (!user) {
+          setAuthInitialized(true)
+          dispatch(setInitialized(true))
+        }
+
       } catch (error) {
-        console.error('Auth initialization error:', error)
-        dispatch(clearUser())
+        console.error('Authentication initialization failed:', error)
         dispatch(setInitialized(true))
         setAuthInitialized(true)
       }
     }
 
     initializeAuth()
-  }, [dispatch])
-
-  // Route guard effect
-  useEffect(() => {
-    if (!isInitialized) return
-
-    const config = getRouteConfig(location.pathname)
-    const accessCheck = verifyRouteAccess(config, user)
-
-    if (!accessCheck.allowed && accessCheck.redirectTo) {
-      const redirectUrl = accessCheck.excludeRedirectQuery 
-        ? accessCheck.redirectTo
-        : `${accessCheck.redirectTo}?redirect=${encodeURIComponent(location.pathname + location.search)}`
-      
-      navigate(redirectUrl)
-    }
-  }, [isInitialized, user, location.pathname, location.search, navigate])
+  }, []) // Empty deps - initialize only once
 
   // Handle post-authentication navigation
-  const handleNavigation = (authenticatedUser) => {
+  const handleNavigation = (user) => {
     const urlParams = new URLSearchParams(location.search)
     const redirectPath = urlParams.get("redirect")
     
     if (redirectPath) {
       navigate(redirectPath)
-} else if (["/login", "/signup", "/callback"].includes(location.pathname)) {
-      navigate("/discover")
+    } else {
+      const authPages = ["/login", "/signup", "/callback"]
+      const isOnAuthPage = authPages.some(page => location.pathname.includes(page))
+      
+      if (isOnAuthPage) {
+        navigate("/")
+      }
     }
-    // Otherwise stay on current page
   }
+
+  // Route guard effect - runs on every navigation when initialized
+  useEffect(() => {
+    if (!isInitialized) return // Gate 2: Don't run guards until auth is initialized
+
+    const currentPath = location.pathname
+    const config = getRouteConfig(currentPath)
+    
+    if (config?.allow) {
+      const accessCheck = verifyRouteAccess(config, user)
+      
+      if (!accessCheck.allowed && config.redirectOnDeny) {
+        const redirectQuery = accessCheck.excludeRedirectQuery ? '' : `?redirect=${encodeURIComponent(currentPath + location.search)}`
+        navigate(`${config.redirectOnDeny}${redirectQuery}`)
+      }
+    }
+  }, [isInitialized, user, location.pathname, location.search, navigate])
 
   // Logout function
   const logout = async () => {
     try {
-      const { ApperUI } = window.ApperSDK || {}
-      if (ApperUI?.logout) {
-        await ApperUI.logout()
+      if (window.ApperSDK?.ApperUI) {
+        await window.ApperSDK.ApperUI.logout()
       }
       dispatch(clearUser())
       navigate('/login')
@@ -116,7 +119,7 @@ const Root = () => {
     }
   }
 
-  // Show loading spinner until auth is initialized
+  // Gate 1: Show loading spinner until auth is initialized
   if (!authInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -125,6 +128,7 @@ const Root = () => {
     )
   }
 
+  // Provide auth context and render routes
   return (
     <AuthContext.Provider value={{ logout, isInitialized }}>
       <Outlet />
@@ -132,4 +136,12 @@ const Root = () => {
   )
 }
 
+// Hook for accessing auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within AuthContext')
+  }
+  return context
+}
 export default Root

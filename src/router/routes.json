@@ -4,12 +4,12 @@
       "when": {
         "conditions": [
           {
-            "label": "Homepage requires authentication",
-            "rule": "authenticated"
+            "label": "Homepage is public",
+            "rule": "public"
           }
-        ]
-      },
-      "redirectOnDeny": "/login"
+        ],
+        "operator": "OR"
+      }
     }
   },
   "/login": {
@@ -41,7 +41,7 @@
       "when": {
         "conditions": [
           {
-            "label": "Callback page is public",
+            "label": "Auth callback is public",
             "rule": "public"
           }
         ]
@@ -60,12 +60,12 @@
       }
     }
   },
-  "/reset-password/*": {
+  "/reset-password": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Reset password page is public",
+            "label": "Reset password is public",
             "rule": "public"
           }
         ]
@@ -77,56 +77,19 @@
       "when": {
         "conditions": [
           {
-            "label": "Prompt password page is public",
+            "label": "Prompt password is public",
             "rule": "public"
           }
         ]
       }
     }
   },
-"/discover": {
+  "/library": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Discover page requires authentication",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
-  "/story/:id": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "Story details are public",
-            "rule": "public"
-          }
-        ]
-      }
-    }
-  },
-  "/story/:storyId/chapter/:chapterId": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "Reading chapters is public",
-            "rule": "public"
-          }
-        ]
-      }
-    }
-  },
-  "/write": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to write",
+            "label": "User must be logged in to view library",
             "rule": "authenticated"
           }
         ]
@@ -135,64 +98,12 @@
       "excludeRedirectQuery": false
     }
   },
-  "/write/new": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to create stories",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
-  "/write/:id": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to edit stories",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
-  "/library": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to access library",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
   "/reading-lists": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "User must be logged in to access reading lists",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
-  "/notifications": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to see notifications",
+            "label": "User must be logged in to view reading lists",
             "rule": "authenticated"
           }
         ]
@@ -205,7 +116,46 @@
       "when": {
         "conditions": [
           {
-            "label": "User must be logged in to see followed authors",
+            "label": "User must be logged in to view following",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/write": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to write",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/write/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to write stories",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/notifications": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to view notifications",
             "rule": "authenticated"
           }
         ]
