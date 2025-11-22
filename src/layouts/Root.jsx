@@ -94,8 +94,8 @@ const Root = () => {
     
     if (redirectPath) {
       navigate(redirectPath)
-    } else if (["/login", "/signup", "/callback"].includes(location.pathname)) {
-      navigate("/")
+} else if (["/login", "/signup", "/callback"].includes(location.pathname)) {
+      navigate("/discover")
     }
     // Otherwise stay on current page
   }

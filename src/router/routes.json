@@ -4,12 +4,12 @@
       "when": {
         "conditions": [
           {
-            "label": "Homepage is public",
-            "rule": "public"
+            "label": "Homepage requires authentication",
+            "rule": "authenticated"
           }
-        ],
-        "operator": "OR"
-      }
+        ]
+      },
+      "redirectOnDeny": "/login"
     }
   },
   "/login": {
@@ -84,16 +84,17 @@
       }
     }
   },
-  "/discover": {
+"/discover": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Discover page is public",
-            "rule": "public"
+            "label": "Discover page requires authentication",
+            "rule": "authenticated"
           }
         ]
-      }
+      },
+      "redirectOnDeny": "/login"
     }
   },
   "/story/:id": {

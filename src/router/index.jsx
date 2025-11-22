@@ -55,14 +55,14 @@ export const router = createBrowserRouter([
     element: <Root />, // Root layout with auth orchestration - NO createRoute wrapper
     children: [
       {
-        path: '/',
+path: '/',
         element: <Layout />, // App layout - NO createRoute wrapper
         children: [
-          // Public routes
+          // Default route redirects to login for authentication
           createRoute({
             index: true,
-            element: <Discover />,
-            title: 'Discover Stories'
+            element: <Login />,
+            title: 'Login'
           }),
           createRoute({
             path: 'discover',
@@ -119,7 +119,7 @@ export const router = createBrowserRouter([
         ]
       },
       
-      // Authentication routes (outside main layout)
+// Authentication routes (outside main layout)
       createRoute({
         path: 'login',
         element: <Login />,
