@@ -1,29 +1,26 @@
 import React from "react"
 import { Outlet } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
+import { useSelector } from "react-redux"
 import Header from "@/components/organisms/Header"
+import { useAuth } from "@/layouts/Root"
 
 const Layout = () => {
+  const user = useSelector((state) => state.user.user)
+  const { logout, isInitialized } = useAuth()
+  
+  // Prepare outlet context with app-level state and methods
+  const outletContext = {
+    user,
+    isInitialized,
+    logout
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <Outlet />
+        <Outlet context={outletContext} />
       </main>
-      
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        className="toast-container"
-        style={{ zIndex: 9999 }}
-      />
     </div>
   )
 }
