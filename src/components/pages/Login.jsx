@@ -1,31 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Input from "@/components/atoms/Input";
-import { useAuth } from "@/layouts/Root";
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { useAuth } from '@/layouts/Root'
+import Button from '@/components/atoms/Button'
+import Input from '@/components/atoms/Input'
 
 const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
-  const { isInitialized } = useAuth()
   const { user } = useSelector((state) => state.user)
-
-const [formData, setFormData] = useState({
+  const { isInitialized } = useAuth()
+  
+  const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
+  // Handle authentication redirect - moved from handleSubmit
   useEffect(() => {
     if (isInitialized && user) {
-      const redirectPath = searchParams.get('redirect') || '/'
-      navigate(redirectPath)
-      return
+      const urlParams = new URLSearchParams(location.search)
+      const redirectPath = urlParams.get("redirect")
+      
+      if (redirectPath) {
+        navigate(redirectPath)
+      } else {
+        navigate('/discover')
+      }
     }
-  }, [isInitialized, user, navigate, searchParams])
+  }, [isInitialized, user, location.search, navigate])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -37,92 +43,42 @@ const [formData, setFormData] = useState({
     if (error) setError('')
   }
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
     try {
-      // Basic validation
-      if (!formData.email || !formData.password) {
-        setError('Please fill in all fields')
-        return
+      if (!window.ApperSDK) {
+        throw new Error('ApperSDK not loaded')
       }
 
-      if (!formData.email.includes('@')) {
-        setError('Please enter a valid email address')
-        return
-      }
-
-      // Check if user is already authenticated
-      const { user } = useSelector((state) => state.user)
-      if (user) {
-        // Handle navigation for already authenticated users
-        const urlParams = new URLSearchParams(location.search)
-        const redirectPath = urlParams.get("redirect")
-        
-        if (redirectPath) {
-          navigate(redirectPath)
-        } else {
-          navigate('/discover')
-        }
-        return
-      }
-
-      // Integrate with ApperUI authentication system
-      const { ApperUI } = window.ApperSDK || {}
+      const { ApperUI } = window.ApperSDK
       
-      if (!ApperUI) {
-        setError('Authentication system not available. Please refresh the page.')
-        return
-      }
-
-      // Use ApperUI's login functionality
-      // This will trigger the onSuccess/onError handlers in Root.jsx
-      // which manage Redux state updates and navigation
-      await ApperUI.login(formData.email, formData.password)
-      
-      // The authentication success/error will be handled by Root.jsx
-      // No need for manual navigation here as Root.jsx handles it
-      
+      // Use ApperUI for authentication
+      ApperUI.showLogin("#authentication")
     } catch (err) {
-      // Handle authentication errors
-      setError(err.message || 'Login failed. Please check your credentials and try again.')
+      setError(err.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Show loading if not initialized
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full" />
       </div>
     )
   }
 
-  if (user) {
-    return null // Will redirect in useEffect
-  }
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-accent/10 rounded-full flex items-center justify-center">
-            <ApperIcon name="BookOpen" size={32} className="text-accent" />
-          </div>
-          
-          <h1 className="text-3xl font-display font-bold text-primary">
-            Welcome Back
-          </h1>
-          
-          <p className="text-secondary font-ui">
-            Sign in to continue your reading journey
-          </p>
-        </div>
-
-<div className="w-full max-w-md mx-auto">
+  // Show authentication container if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div id="authentication"></div>
+        <div className="w-full max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-card p-8 border border-surface">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="text-center mb-8">
@@ -177,7 +133,7 @@ const handleSubmit = async (e) => {
                   Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => navigate('/signup')}
+                    onClick={() => navigate('/signup' + (searchParams.get('redirect') ? `?redirect=${searchParams.get('redirect')}` : ''))}
                     className="text-accent hover:text-accent/80 font-medium transition-colors"
                   >
                     Sign up here
@@ -195,21 +151,12 @@ const handleSubmit = async (e) => {
             </form>
           </div>
         </div>
-
-        <div className="text-center">
-          <p className="text-sm text-secondary font-ui">
-            Don't have an account?{' '}
-            <button
-              onClick={() => navigate('/signup' + (searchParams.get('redirect') ? `?redirect=${searchParams.get('redirect')}` : ''))}
-              className="text-accent hover:text-accent/80 font-medium"
-            >
-              Sign up here
-            </button>
-          </p>
-        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  // This shouldn't render since useEffect handles redirect
+  return null
 }
 
 export default Login
