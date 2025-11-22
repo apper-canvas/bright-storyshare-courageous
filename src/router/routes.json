@@ -1,15 +1,16 @@
 {
-  "/": {
+"/": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Homepage is public",
-            "rule": "public"
+            "label": "User must be logged in to access main app",
+            "rule": "authenticated"
           }
-        ],
-        "operator": "OR"
-      }
+        ]
+      },
+      "redirectOnDeny": "/login",
+      "excludeRedirectQuery": false
     }
   },
   "/library": {

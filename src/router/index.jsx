@@ -1,129 +1,61 @@
 import React, { Suspense, lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import { getRouteConfig } from "./route.utils";
-import Root from "@/layouts/Root";
+import { getRouteConfig } from "@/router/route.utils";
 import Layout from "@/components/organisms/Layout";
+import Root from "@/layouts/Root";
 
-// Lazy load all page components
-const Discover = lazy(() => import("@/components/pages/Discover"));
-const Library = lazy(() => import("@/components/pages/Library"));
-const ReadingLists = lazy(() => import("@/components/pages/ReadingLists"));
-const Following = lazy(() => import("@/components/pages/Following"));
-const Write = lazy(() => import("@/components/pages/Write"));
-const StoryDetail = lazy(() => import("@/components/pages/StoryDetail"));
-const ChapterRead = lazy(() => import("@/components/pages/ChapterRead"));
-const NewStory = lazy(() => import("@/components/pages/NewStory"));
-const StoryEdit = lazy(() => import("@/components/pages/StoryEdit"));
-const NotificationCenter = lazy(() => import("@/components/pages/NotificationCenter"));
-const NotFound = lazy(() => import("@/components/pages/NotFound"));
-const Login = lazy(() => import("@/components/pages/Login"));
-const Signup = lazy(() => import("@/components/pages/Signup"));
-const Callback = lazy(() => import("@/components/pages/Callback"));
-const ErrorPage = lazy(() => import("@/components/pages/ErrorPage"));
-const ResetPassword = lazy(() => import("@/components/pages/ResetPassword"));
-const PromptPassword = lazy(() => import("@/components/pages/PromptPassword"));
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-surface">
-    <div className="text-center space-y-4">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-        <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-accent/30 rounded-full animate-spin" style={{animationDirection: "reverse", animationDuration: "1.5s"}}></div>
-      </div>
-      <div className="space-y-2">
-        <h3 className="text-xl font-display text-primary">Loading StoryShare</h3>
-        <p className="text-secondary font-ui">Preparing your reading experience...</p>
-      </div>
-    </div>
+// Lazy load components
+const Discover = lazy(() => import('@/components/pages/Discover'))
+const Library = lazy(() => import('@/components/pages/Library'))
+const ReadingLists = lazy(() => import('@/components/pages/ReadingLists'))
+const Following = lazy(() => import('@/components/pages/Following'))
+const NotificationCenter = lazy(() => import('@/components/pages/NotificationCenter'))
+const Write = lazy(() => import('@/components/pages/Write'))
+const StoryDetail = lazy(() => import('@/components/pages/StoryDetail'))
+const StoryEdit = lazy(() => import('@/components/pages/StoryEdit'))
+const NewStory = lazy(() => import('@/components/pages/NewStory'))
+const ChapterRead = lazy(() => import('@/components/pages/ChapterRead'))
+const Login = lazy(() => import('@/components/pages/Login'))
+const Signup = lazy(() => import('@/components/pages/Signup'))
+const Callback = lazy(() => import('@/components/pages/Callback'))
+const ErrorPage = lazy(() => import('@/components/pages/ErrorPage'))
+const NotFound = lazy(() => import('@/components/pages/NotFound'))
+const PromptPassword = lazy(() => import('@/components/pages/PromptPassword'))
+const ResetPassword = lazy(() => import('@/components/pages/ResetPassword'))
+
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full" />
   </div>
-);
-// createRoute helper
+)
+
+// Create route helper
 const createRoute = ({ path, index, element, access, children, ...meta }) => {
-  const configPath = index ? "/" : (path?.startsWith('/') ? path : `/${path}`);
-  const config = getRouteConfig(configPath);
-  const finalAccess = access || config?.allow;
+  const configPath = index ? "/" : (path.startsWith('/') ? path : `/${path}`)
+  const config = getRouteConfig(configPath)
+  const finalAccess = access || config?.allow
   
   return {
     ...(index ? { index: true } : { path }),
-    element: element ? <Suspense fallback={<LoadingFallback />}>{element}</Suspense> : element,
+    element: element ? <Suspense fallback={<LoadingSpinner />}>{element}</Suspense> : element,
     handle: { access: finalAccess, ...meta },
     ...(children && { children })
-  };
-};
+  }
+}
+
 // Router configuration
-const routes = [
+export const router = createBrowserRouter([
   {
     path: '/',
     element: <Root />,
     children: [
-      {
-        path: '/',
-        element: <Layout />,
-        children: [
-          // Public routes
-          createRoute({
-            index: true,
-            element: <Discover />,
-            title: 'Discover'
-          }),
-          
-          // Protected routes (access controlled by routes.json)
-          createRoute({
-            path: 'library',
-            element: <Library />,
-            title: 'Library'
-          }),
-          createRoute({
-            path: 'reading-lists',
-            element: <ReadingLists />,
-            title: 'Reading Lists'
-          }),
-          createRoute({
-            path: 'following',
-            element: <Following />,
-            title: 'Following'
-          }),
-          createRoute({
-            path: 'write',
-            element: <Write />,
-            title: 'Write'
-          }),
-          createRoute({
-            path: 'write/new',
-            element: <NewStory />,
-            title: 'New Story'
-          }),
-          createRoute({
-            path: 'story/:id',
-            element: <StoryDetail />,
-            title: 'Story Details'
-          }),
-          createRoute({
-            path: 'story/:storyId/chapter/:chapterId',
-            element: <ChapterRead />,
-            title: 'Chapter'
-          }),
-          createRoute({
-            path: 'story/:id/edit',
-            element: <StoryEdit />,
-            title: 'Edit Story'
-          }),
-          createRoute({
-            path: 'notifications',
-            element: <NotificationCenter />,
-            title: 'Notifications'
-          }),
-          
-          // Catch all - must be last
-          createRoute({
-            path: '*',
-            element: <NotFound />,
-            title: 'Not Found'
-          })
-        ]
-      },
-      
-      // Auth routes (outside layout)
+      // Authentication routes (no layout)
+      createRoute({
+        index: true,
+        element: <Login />,
+        title: 'Login'
+      }),
       createRoute({
         path: 'login',
         element: <Login />,
@@ -153,9 +85,108 @@ const routes = [
         path: 'reset-password/:appId/:fields',
         element: <ResetPassword />,
         title: 'Reset Password'
+      }),
+      
+      // Main app routes with Layout wrapper
+      {
+        path: 'discover',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <Discover />,
+            title: 'Discover Stories'
+          })
+        ]
+      },
+      {
+        path: 'library',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <Library />,
+            title: 'My Library'
+          })
+        ]
+      },
+      {
+        path: 'reading-lists',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <ReadingLists />,
+            title: 'Reading Lists'
+          })
+        ]
+      },
+      {
+        path: 'following',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <Following />,
+            title: 'Following'
+          })
+        ]
+      },
+      {
+        path: 'notifications',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <NotificationCenter />,
+            title: 'Notifications'
+          })
+        ]
+      },
+      {
+        path: 'write',
+        element: <Layout />,
+        children: [
+          createRoute({
+            index: true,
+            element: <Write />,
+            title: 'Write'
+          }),
+          createRoute({
+            path: 'new',
+            element: <NewStory />,
+            title: 'New Story'
+          }),
+          createRoute({
+            path: ':storyId/edit',
+            element: <StoryEdit />,
+            title: 'Edit Story'
+          })
+        ]
+      },
+      {
+        path: 'story',
+        element: <Layout />,
+        children: [
+          createRoute({
+            path: ':storyId',
+            element: <StoryDetail />,
+            title: 'Story Details'
+          }),
+          createRoute({
+            path: ':storyId/chapter/:chapterId',
+            element: <ChapterRead />,
+            title: 'Reading'
+          })
+        ]
+      },
+      
+      // 404 route
+      createRoute({
+        path: '*',
+        element: <NotFound />,
+        title: 'Page Not Found'
       })
-    ]
+]
   }
-];
-
-export const router = createBrowserRouter(routes);
+])

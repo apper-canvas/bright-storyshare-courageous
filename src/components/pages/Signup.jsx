@@ -1,38 +1,27 @@
-import React, { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '@/layouts/Root'
+import React, { useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Signup = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { user, isInitialized } = useAuth()
+  const { user, isInitialized } = useSelector((state) => state.user)
 
   useEffect(() => {
     if (isInitialized && user) {
       // User is already logged in, redirect
-      const redirectPath = searchParams.get('redirect') || '/'
+      const redirectPath = searchParams.get('redirect') || '/discover'
       navigate(redirectPath, { replace: true })
       return
     }
 
+    // Show signup form if initialized and no user
     if (isInitialized && !user) {
-      // Show signup form
-      const { ApperUI } = window.ApperSDK
-      ApperUI.showSignup("#authentication")
+      if (window.ApperSDK?.ApperUI) {
+        window.ApperSDK.ApperUI.showSignup('#authentication')
+      }
     }
   }, [isInitialized, user, navigate, searchParams])
-
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full" />
-      </div>
-    )
-  }
-
-  if (user) {
-    return null // Will redirect
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -42,7 +31,7 @@ const Signup = () => {
             Join StoryShare
           </h2>
           <p className="mt-2 text-sm text-secondary font-ui">
-            Create your account to start reading and writing
+            Create an account to start your storytelling journey
           </p>
         </div>
         
@@ -51,12 +40,9 @@ const Signup = () => {
         <div className="text-center">
           <p className="text-sm text-secondary font-ui">
             Already have an account?{' '}
-            <button
-              onClick={() => navigate('/login')}
-              className="text-accent hover:text-accent/80 font-medium"
-            >
+            <Link to="/login" className="text-accent hover:text-primary font-medium">
               Sign in
-            </button>
+            </Link>
           </p>
         </div>
       </div>

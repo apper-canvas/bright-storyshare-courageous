@@ -1,42 +1,31 @@
-import React from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import Button from '@/components/atoms/Button'
-import ApperIcon from '@/components/ApperIcon'
+import React from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ApperIcon } from "@/components";
+import Button from "@/components/atoms/Button";
 
 const ErrorPage = () => {
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const error = searchParams.get('message') || 'An authentication error occurred'
+  const errorMessage = searchParams.get('message') || 'We encountered an unexpected error.'
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="mx-auto w-16 h-16 bg-error/10 rounded-full flex items-center justify-center">
-          <ApperIcon name="AlertTriangle" size={32} className="text-error" />
-        </div>
-        
-        <div>
-          <h2 className="text-2xl font-display font-bold text-primary mb-2">
+      <div className="max-w-md w-full text-center space-y-8">
+        <div className="space-y-4">
+          <ApperIcon name="AlertTriangle" size={64} className="mx-auto text-error" />
+          <h1 className="text-3xl font-display font-bold text-primary">
             Authentication Error
-          </h2>
+          </h1>
           <p className="text-secondary font-ui">
-            {error}
+            {errorMessage}
           </p>
         </div>
-        
-        <div className="space-y-3">
-          <Button 
-            onClick={() => navigate('/login')}
-            className="w-full"
-          >
-            Back to Login
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button variant="primary" asChild>
+            <Link to="/login">Back to Login</Link>
           </Button>
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/')}
-            className="w-full"
-          >
-            Go Home
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Try Again
           </Button>
         </div>
       </div>
