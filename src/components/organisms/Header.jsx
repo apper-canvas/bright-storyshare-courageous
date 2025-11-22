@@ -1,21 +1,22 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/layouts/Root";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
 import { cn } from "@/utils/cn";
+import { useAuth } from "@/layouts/Root";
 
 // Temporary NotificationBadge component until proper implementation
 const NotificationBadge = () => (
   <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
 );
 
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-
+  const { logout } = useAuth()
   const handleSearch = (query) => {
     if (query.trim()) {
       navigate(`/?search=${encodeURIComponent(query)}`)
@@ -92,11 +93,9 @@ const navItems = [
               <ApperIcon name="Plus" size={16} />
               New Story
             </Button>
-            
-            <Button
+<Button
               variant="outline"
               onClick={() => {
-                const { logout } = useAuth()
                 logout()
               }}
               className="inline-flex items-center gap-2"
@@ -164,9 +163,8 @@ const navItems = [
               </Button>
               
               <Button
-                variant="outline"
+variant="outline"
                 onClick={() => {
-                  const { logout } = useAuth()
                   logout()
                   setIsMenuOpen(false)
                 }}
