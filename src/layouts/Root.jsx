@@ -33,7 +33,7 @@ const Root = () => {
           throw new Error('ApperSDK not loaded')
         }
 
-        const { ApperUI } = window.ApperSDK
+const { ApperUI } = window.ApperSDK
 
         // Set up authentication handlers
         ApperUI.onSuccess = (user) => {
@@ -48,9 +48,7 @@ const Root = () => {
           dispatch(setInitialized(true))
         }
 
-        // Initialize ApperUI
-        await ApperUI.initialize()
-        
+        // ApperUI automatically initializes when handlers are set
       } catch (error) {
         console.error('Failed to initialize authentication:', error)
         dispatch(setInitialized(true))
