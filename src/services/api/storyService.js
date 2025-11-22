@@ -1,6 +1,5 @@
-import storyData from "@/services/mockData/stories.json";
+import storyData from "@/services/mockData/stories.json"
 
-// Service implementation using class pattern
 class StoryService {
   constructor() {
     this.stories = [...storyData]
@@ -62,67 +61,15 @@ class StoryService {
     return true
   }
 
-async search(query, filterOptions = {}) {
+  async search(query) {
     await this.delay()
-    
-    let filtered = [...this.stories]
-    
-    // Text search filter
-    if (query) {
-      const searchTerm = query.toLowerCase()
-      filtered = filtered.filter(story =>
-        story.title.toLowerCase().includes(searchTerm) ||
-        story.authorName.toLowerCase().includes(searchTerm) ||
-        story.description.toLowerCase().includes(searchTerm) ||
-        story.genres.some(genre => genre.toLowerCase().includes(searchTerm))
-      )
-    }
-    
-    // Status filter
-    if (filterOptions.status && filterOptions.status.length > 0) {
-      filtered = filtered.filter(story => 
-        filterOptions.status.includes(story.status)
-      )
-    }
-    
-    // Length filter
-    if (filterOptions.length && filterOptions.length.length > 0) {
-      filtered = filtered.filter(story => {
-        const wordCount = story.wordCount || 0
-        return filterOptions.length.some(range => {
-          switch (range) {
-            case 'short':
-              return wordCount < 5000
-            case 'medium':
-              return wordCount >= 5000 && wordCount <= 20000
-            case 'long':
-              return wordCount > 20000
-            default:
-              return true
-          }
-        })
-      })
-    }
-    
-    // Rating filter
-    if (filterOptions.rating && filterOptions.rating.length > 0) {
-      filtered = filtered.filter(story => {
-        const rating = story.rating || 0
-        return filterOptions.rating.some(minRating => {
-          switch (minRating) {
-            case '4+':
-              return rating >= 4.0
-            case '3+':
-              return rating >= 3.0
-            case 'all':
-            default:
-              return true
-          }
-        })
-      })
-    }
-    
-    return filtered
+    const searchTerm = query.toLowerCase()
+    return this.stories.filter(story =>
+      story.title.toLowerCase().includes(searchTerm) ||
+      story.authorName.toLowerCase().includes(searchTerm) ||
+      story.description.toLowerCase().includes(searchTerm) ||
+      story.genres.some(genre => genre.toLowerCase().includes(searchTerm))
+    )
   }
 
   async getByGenre(genre) {

@@ -1,33 +1,24 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import SearchBar from "@/components/molecules/SearchBar";
-import { useAuth } from '@/layouts/Root'
-import { cn } from "@/utils/cn";
+import React, { useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import ApperIcon from "@/components/ApperIcon"
+import SearchBar from "@/components/molecules/SearchBar"
+import Button from "@/components/atoms/Button"
+import { cn } from "@/utils/cn"
 
-// Notification badge component (placeholder)
-const NotificationBadge = () => (
-  <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-    3
-  </span>
-)
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, isAuthenticated, logout } = useAuth()
+
   const handleSearch = (query) => {
     if (query.trim()) {
       navigate(`/?search=${encodeURIComponent(query)}`)
     }
   }
 
-const navItems = [
+  const navItems = [
     { label: "Discover", path: "", exact: true },
     { label: "Library", path: "library" },
-    { label: "Following", path: "following" },
-    { label: "Notifications", path: "notifications" },
     { label: "Write", path: "write" }
   ]
 
@@ -58,22 +49,19 @@ const navItems = [
           </Link>
 
           {/* Desktop Navigation */}
-<nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path === "" ? "/" : `/${item.path}`}
                 className={cn(
-                  "px-4 py-2 rounded-lg font-ui font-medium transition-all duration-200 relative",
+                  "px-4 py-2 rounded-lg font-ui font-medium transition-all duration-200",
                   isActive(item.path, item.exact)
                     ? "bg-accent text-white shadow-md"
                     : "text-secondary hover:text-primary hover:bg-surface"
                 )}
               >
                 {item.label}
-                {item.path === "notifications" && (
-                  <NotificationBadge />
-                )}
               </Link>
             ))}
           </nav>
@@ -83,37 +71,16 @@ const navItems = [
             <SearchBar onSearch={handleSearch} />
           </div>
 
-{/* Desktop Actions */}
+          {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate("/write/new")}
-                  className="inline-flex items-center gap-2"
-                >
-                  <ApperIcon name="Plus" size={16} />
-                  New Story
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={logout}
-                  className="inline-flex items-center gap-2"
-                >
-                  <ApperIcon name="LogOut" size={16} />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="primary"
-                onClick={() => navigate("/login")}
-                className="inline-flex items-center gap-2"
-              >
-                <ApperIcon name="LogIn" size={16} />
-                Login
-              </Button>
-            )}
+            <Button
+              variant="primary"
+              onClick={() => navigate("/write/new")}
+              className="inline-flex items-center gap-2"
+            >
+              <ApperIcon name="Plus" size={16} />
+              New Story
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -133,72 +100,42 @@ const navItems = [
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden mt-4 py-4 border-t border-surface">
-<nav className="space-y-2">
+            <nav className="space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path === "" ? "/" : `/${item.path}`}
                   onClick={() => setIsMenuOpen(false)}
                   className={cn(
-                    "block px-4 py-3 rounded-lg font-ui font-medium transition-all duration-200 relative",
+                    "block px-4 py-3 rounded-lg font-ui font-medium transition-all duration-200",
                     isActive(item.path, item.exact)
                       ? "bg-accent text-white shadow-md"
                       : "text-secondary hover:text-primary hover:bg-surface"
                   )}
                 >
                   <div className="flex items-center gap-3">
-<ApperIcon 
-                      name={item.path === "" ? "Compass" : item.path === "library" ? "Library" : item.path === "following" ? "Users" : item.path === "notifications" ? "Bell" : "PenTool"} 
+                    <ApperIcon 
+                      name={item.path === "" ? "Compass" : item.path === "library" ? "Library" : "PenTool"} 
                       size={20} 
                     />
                     {item.label}
-                    {item.path === "notifications" && (
-                      <NotificationBadge />
-                    )}
                   </div>
                 </Link>
               ))}
             </nav>
             
-<div className="mt-6 pt-4 border-t border-surface space-y-2">
-              {isAuthenticated ? (
-                <>
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      navigate("/write/new")
-                      setIsMenuOpen(false)
-                    }}
-                    className="w-full inline-flex items-center justify-center gap-2"
-                  >
-                    <ApperIcon name="Plus" size={16} />
-                    New Story
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      logout()
-                      setIsMenuOpen(false)
-                    }}
-                    className="w-full inline-flex items-center justify-center gap-2"
-                  >
-                    <ApperIcon name="LogOut" size={16} />
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    navigate("/login")
-                    setIsMenuOpen(false)
-                  }}
-                  className="w-full inline-flex items-center justify-center gap-2"
-                >
-                  <ApperIcon name="LogIn" size={16} />
-                  Login
-                </Button>
-              )}
+            <div className="mt-6 pt-4 border-t border-surface">
+              <Button
+                variant="primary"
+                onClick={() => {
+                  navigate("/write/new")
+                  setIsMenuOpen(false)
+                }}
+                className="w-full inline-flex items-center justify-center gap-2"
+              >
+                <ApperIcon name="Plus" size={16} />
+                New Story
+              </Button>
             </div>
           </div>
         )}
