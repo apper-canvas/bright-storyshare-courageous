@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAuth } from "@/layouts/Root";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";

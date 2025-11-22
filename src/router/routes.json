@@ -1,0 +1,215 @@
+{
+  "/": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Homepage is public",
+            "rule": "public"
+          }
+        ],
+        "operator": "OR"
+      }
+    }
+  },
+  "/login": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Login page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/signup": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Signup page is public", 
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/callback": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Callback page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/error": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Error page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/reset-password/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Reset password page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/prompt-password/*": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Prompt password page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/discover": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Discover page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/story/:id": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Story details are public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/story/:storyId/chapter/:chapterId": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Reading chapters is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/write": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to write",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login",
+      "excludeRedirectQuery": false
+    }
+  },
+  "/write/new": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to create stories",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/write/:id": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to edit stories",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/library": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to access library",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/reading-lists": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to access reading lists",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/notifications": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to see notifications",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/following": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to see followed authors",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  }
+}
