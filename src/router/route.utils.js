@@ -1,12 +1,12 @@
 // CRITICAL: DO NOT MODIFY this implementation
 // customFunctions MUST remain empty - custom functions NOT supported
 
+import routes from './routes.json'
+
 const customFunctions = {}
 
 export function getRouteConfig(path) {
   try {
-import routes from './routes.json'
-    
     // Find matching route using pattern matching
     const matchingRoutes = Object.entries(routes)
       .map(([pattern, config]) => ({
