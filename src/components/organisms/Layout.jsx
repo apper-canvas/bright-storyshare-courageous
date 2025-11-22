@@ -4,11 +4,18 @@ import { ToastContainer } from "react-toastify"
 import Header from "@/components/organisms/Header"
 
 const Layout = () => {
+  // App-level state that needs to be shared with all route components
+  const outletContextValue = {
+    // Add any app-level state and methods here that need to be passed to route elements
+    appVersion: "1.0.0",
+    // Any other shared state can be added here
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <Outlet />
+        <Outlet context={outletContextValue} />
       </main>
       
       <ToastContainer

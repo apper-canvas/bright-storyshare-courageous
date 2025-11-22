@@ -1,11 +1,11 @@
-import React from "react"
-import { useNavigate } from "react-router-dom"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-
+import React from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useAuth } from "@/layouts/Root";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
 const NotFound = () => {
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
+  const outletContext = useOutletContext();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-surface px-4">
       <div className="text-center space-y-8 max-w-md">

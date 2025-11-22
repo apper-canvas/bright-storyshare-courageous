@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { storyService } from "@/services/api/storyService";
 import { chapterService } from "@/services/api/chapterService";
 import { libraryService } from "@/services/api/libraryService";
 import { authorFollowService } from "@/services/api/authorFollowService";
 import { readingListService } from "@/services/api/readingListService";
 import { toast } from "react-toastify";
+import { useAuth } from "@/layouts/Root";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
@@ -19,9 +20,11 @@ import { calculateReadingTime, formatDate, formatNumber, getGenreColor } from "@
 const StoryDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const outletContext = useOutletContext()
+  const { user } = useAuth()
   const [story, setStory] = useState(null)
   const [chapters, setChapters] = useState([])
-const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
@@ -38,7 +41,7 @@ const [loading, setLoading] = useState(true)
     }
   }, [id])
 
-const loadStoryDetails = async () => {
+  const loadStoryDetails = async () => {
     try {
       setLoading(true)
       setError("")

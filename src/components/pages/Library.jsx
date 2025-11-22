@@ -1,75 +1,79 @@
-import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import StoryGrid from "@/components/organisms/StoryGrid"
-import Button from "@/components/atoms/Button"
-import Badge from "@/components/atoms/Badge"
-import ApperIcon from "@/components/ApperIcon"
-import Loading from "@/components/ui/Loading"
-import Empty from "@/components/ui/Empty"
-import { libraryService } from "@/services/api/libraryService"
-import { storyService } from "@/services/api/storyService"
-import { readingListService } from "@/services/api/readingListService"
-import { cn } from "@/utils/cn"
+import React, { useEffect, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { libraryService } from "@/services/api/libraryService";
+import { storyService } from "@/services/api/storyService";
+import { readingListService } from "@/services/api/readingListService";
+import { useAuth } from "@/layouts/Root";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import StoryGrid from "@/components/organisms/StoryGrid";
+import { cn } from "@/utils/cn";
 
 const Library = () => {
-const navigate = useNavigate()
-  const [library, setLibrary] = useState([])
-  const [stories, setStories] = useState([])
-  const [readingLists, setReadingLists] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [activeTab, setActiveTab] = useState("currently-reading")
+  const navigate = useNavigate();
+  const outletContext = useOutletContext();
+  const { user } = useAuth();
+const [library, setLibrary] = useState([]);
+  const [stories, setStories] = useState([]);
+  const [readingLists, setReadingLists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("currently-reading");
+  
   useEffect(() => {
-loadLibrary()
-  }, [])
+    loadLibrary();
+  }, []);
 
-  const loadLibrary = async () => {
+const loadLibrary = async () => {
     try {
-      setLoading(true)
-      setError("")
+      setLoading(true);
+      setError("");
       const [libraryData, storiesData, readingListsData] = await Promise.all([
         libraryService.getAll(),
         storyService.getAll(),
         readingListService.getAll()
-      ])
+      ]);
       
-      setLibrary(libraryData)
-      setStories(storiesData)
-      setReadingLists(readingListsData)
+      setLibrary(libraryData);
+      setStories(storiesData);
+      setReadingLists(readingListsData);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const getStoriesByStatus = (status) => {
-    const libraryItems = library.filter(item => item.status === status)
+const getStoriesByStatus = (status) => {
+    const libraryItems = library.filter(item => item.status === status);
     return libraryItems.map(item => 
       stories.find(story => story.Id === item.storyId)
-    ).filter(Boolean)
-  }
+    ).filter(Boolean);
+  };
 
-  const handleLikeStory = async (storyId, liked) => {
+const handleLikeStory = async (storyId, liked) => {
     try {
       setStories(prev => prev.map(story =>
         story.Id === storyId
           ? { ...story, likeCount: liked ? story.likeCount + 1 : story.likeCount - 1 }
           : story
-      ))
+      ));
     } catch (err) {
-      console.error("Failed to like story:", err)
+      console.error("Failed to like story:", err);
     }
-  }
+  };
 
-  const handleRemoveFromLibrary = async (storyId) => {
+const handleRemoveFromLibrary = async (storyId) => {
     try {
-      await libraryService.removeFromLibrary(storyId)
-      setLibrary(prev => prev.filter(item => item.storyId !== storyId))
+      await libraryService.removeFromLibrary(storyId);
+      setLibrary(prev => prev.filter(item => item.storyId !== storyId));
     } catch (err) {
-      console.error("Failed to remove from library:", err)
+      console.error("Failed to remove from library:", err);
     }
-  }
+  };
 
 const tabs = [
     { 
@@ -96,15 +100,15 @@ const tabs = [
       icon: "List",
       lists: readingLists
     }
-  ]
+  ];
 
-  const activeTabData = tabs.find(tab => tab.key === activeTab)
+  const activeTabData = tabs.find(tab => tab.key === activeTab);
 
-  if (loading) {
-    return <Loading type="page" />
+if (loading) {
+    return <Loading type="page" />;
   }
 
-return (
+  return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
@@ -160,8 +164,8 @@ return (
           >
             <ApperIcon name={tab.icon} size={16} />
             {tab.label}
-            <Badge variant="genre" size="sm">
-              {tab.stories.length}
+<Badge variant="genre" size="sm">
+              {tab.key === 'reading-lists' ? tab.lists?.length || 0 : tab.stories?.length || 0}
             </Badge>
           </button>
         ))}
@@ -191,8 +195,8 @@ return (
                       <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
                         <ApperIcon name="List" size={24} className="text-accent" />
                       </div>
-                      <Badge variant="genre" size="sm">
-                        {list.storyIds.length} stories
+<Badge variant="genre" size="sm">
+                        {list.storyIds?.length || 0} stories
                       </Badge>
                     </div>
                     <h3 className="font-display text-lg font-semibold text-primary mb-2">
@@ -272,7 +276,7 @@ return (
         </div>
       )}
     </div>
-  )
-}
+);
+};
 
-export default Library
+export default Library;
