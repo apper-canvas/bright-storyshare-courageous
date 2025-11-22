@@ -1,4 +1,3 @@
-[
 {
   "/": {
     "allow": {
@@ -11,60 +10,6 @@
         ],
         "operator": "OR"
       }
-    }
-  },
-  "/library": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to view library",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login",
-      "excludeRedirectQuery": false
-    }
-  },
-  "/write": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to write",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login",
-      "excludeRedirectQuery": false
-    }
-  },
-  "/write/*": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "Writing section requires authentication",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
-    }
-  },
-  "/story/:id/edit": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "User must be logged in to edit stories",
-            "rule": "authenticated"
-          }
-        ]
-      },
-      "redirectOnDeny": "/login"
     }
   },
   "/login": {
@@ -84,7 +29,7 @@
       "when": {
         "conditions": [
           {
-            "label": "Signup page is public",
+            "label": "Signup page is public", 
             "rule": "public"
           }
         ]
@@ -115,7 +60,7 @@
       }
     }
   },
-  "/reset-password/:appId/:fields": {
+  "/reset-password/*": {
     "allow": {
       "when": {
         "conditions": [
@@ -127,7 +72,7 @@
       }
     }
   },
-  "/prompt-password/:appId/:emailAddress/:provider": {
+  "/prompt-password/*": {
     "allow": {
       "when": {
         "conditions": [
@@ -138,34 +83,41 @@
         ]
       }
     }
-  }
-},
-{
-  "/": {
+  },
+  "/discover": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Homepage is public",
+            "label": "Discover page is public",
             "rule": "public"
           }
-        ],
-        "operator": "OR"
+        ]
       }
     }
   },
-  "/library": {
+  "/story/:id": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "User must be logged in to view library",
-            "rule": "authenticated"
+            "label": "Story details are public",
+            "rule": "public"
           }
         ]
-      },
-      "redirectOnDeny": "/login",
-      "excludeRedirectQuery": false
+      }
+    }
+  },
+  "/story/:storyId/chapter/:chapterId": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Reading chapters is public",
+            "rule": "public"
+          }
+        ]
+      }
     }
   },
   "/write": {
@@ -182,12 +134,12 @@
       "excludeRedirectQuery": false
     }
   },
-  "/write/*": {
+  "/write/new": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Writing section requires authentication",
+            "label": "User must be logged in to create stories",
             "rule": "authenticated"
           }
         ]
@@ -195,7 +147,7 @@
       "redirectOnDeny": "/login"
     }
   },
-  "/story/:id/edit": {
+  "/write/:id": {
     "allow": {
       "when": {
         "conditions": [
@@ -208,77 +160,56 @@
       "redirectOnDeny": "/login"
     }
   },
-  "/login": {
+  "/library": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Login page is public",
-            "rule": "public"
+            "label": "User must be logged in to access library",
+            "rule": "authenticated"
           }
         ]
-      }
+      },
+      "redirectOnDeny": "/login"
     }
   },
-  "/signup": {
+  "/reading-lists": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Signup page is public",
-            "rule": "public"
+            "label": "User must be logged in to access reading lists",
+            "rule": "authenticated"
           }
         ]
-      }
+      },
+      "redirectOnDeny": "/login"
     }
   },
-  "/callback": {
+  "/notifications": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Callback page is public",
-            "rule": "public"
+            "label": "User must be logged in to see notifications",
+            "rule": "authenticated"
           }
         ]
-      }
+      },
+      "redirectOnDeny": "/login"
     }
   },
-  "/error": {
+  "/following": {
     "allow": {
       "when": {
         "conditions": [
           {
-            "label": "Error page is public",
-            "rule": "public"
+            "label": "User must be logged in to see followed authors",
+            "rule": "authenticated"
           }
         ]
-      }
-    }
-  },
-  "/reset-password/:appId/:fields": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "Reset password page is public",
-            "rule": "public"
-          }
-        ]
-      }
-    }
-  },
-  "/prompt-password/:appId/:emailAddress/:provider": {
-    "allow": {
-      "when": {
-        "conditions": [
-          {
-            "label": "Prompt password page is public",
-            "rule": "public"
-          }
-        ]
-      }
+      },
+      "redirectOnDeny": "/login"
     }
   }
 }
-]

@@ -1,140 +1,58 @@
 /**
- * ApperClient Singleton Service
- * Provides a single instance of ApperClient for the entire application
+ * ApperClient Singleton - Ensures single SDK instance
  */
-
-let _client = null;
-let _isInitializing = false;
-
 class ApperClientSingleton {
   constructor() {
-    if (_client) {
-      return _client;
-    }
-    _client = this;
+    this._client = null
+    this._isInitializing = false
   }
 
-  async getInstance() {
-    // Return existing instance if available
-    if (this._apperClient) {
-      return this._apperClient;
+  getInstance() {
+    if (this._client) {
+      return this._client
     }
 
-    // Prevent multiple initializations
-    if (_isInitializing) {
-      // Wait for initialization to complete
-      while (_isInitializing) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-      return this._apperClient;
+    if (this._isInitializing) {
+      return null
     }
 
-    _isInitializing = true;
+    this._isInitializing = true
 
     try {
-      // Check if SDK is loaded
-      if (!window.ApperSDK) {
-        console.warn('ApperSDK not loaded');
-        return null;
+      const { ApperClient } = window.ApperSDK || {}
+      
+      if (!ApperClient) {
+        console.warn('ApperSDK not loaded')
+        this._isInitializing = false
+        return null
       }
 
-      const { ApperClient } = window.ApperSDK;
-      
-      this._apperClient = new ApperClient({
+      this._client = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
+      })
 
-      return this._apperClient;
+      this._isInitializing = false
+      return this._client
     } catch (error) {
-      console.error('Failed to initialize ApperClient:', error);
-      return null;
-    } finally {
-      _isInitializing = false;
+      console.error('Failed to initialize ApperClient:', error)
+      this._isInitializing = false
+      return null
     }
   }
 
   reset() {
-    this._apperClient = null;
-    _client = null;
-    _isInitializing = false;
+    this._client = null
+    this._isInitializing = false
   }
 }
 
-// Export singleton instance getter
-export const getApperClient = async () => {
-  const singleton = new ApperClientSingleton();
-  return await singleton.getInstance();
-};
+const apperClientSingleton = new ApperClientSingleton()
 
-export default getApperClient;
-/**
- * ApperClient Singleton Service
- * Provides a single instance of ApperClient for the entire application
- */
-
-let _client = null;
-let _isInitializing = false;
-
-class ApperClientSingleton {
-  constructor() {
-    if (_client) {
-      return _client;
-    }
-    _client = this;
-  }
-
-  async getInstance() {
-    // Return existing instance if available
-    if (this._apperClient) {
-      return this._apperClient;
-    }
-
-    // Prevent multiple initializations
-    if (_isInitializing) {
-      // Wait for initialization to complete
-      while (_isInitializing) {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-      return this._apperClient;
-    }
-
-    _isInitializing = true;
-
-    try {
-      // Check if SDK is loaded
-      if (!window.ApperSDK) {
-        console.warn('ApperSDK not loaded');
-        return null;
-      }
-
-      const { ApperClient } = window.ApperSDK;
-      
-      this._apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
-
-      return this._apperClient;
-    } catch (error) {
-      console.error('Failed to initialize ApperClient:', error);
-      return null;
-    } finally {
-      _isInitializing = false;
-    }
-  }
-
-  reset() {
-    this._apperClient = null;
-    _client = null;
-    _isInitializing = false;
-  }
+export const getApperClient = () => {
+  return apperClientSingleton.getInstance()
 }
 
-// Export singleton instance getter
-export const getApperClient = async () => {
-  const singleton = new ApperClientSingleton();
-  return await singleton.getInstance();
-};
-
-export default getApperClient;
+export const resetApperClient = () => {
+  apperClientSingleton.reset()
+}

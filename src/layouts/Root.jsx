@@ -1,144 +1,135 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUser, setInitialized, setUser } from "@/store/userSlice";
-import { getRouteConfig, verifyRouteAccess } from "@/router/route.utils";
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { setUser, clearUser, setInitialized } from '@/store/userSlice'
+import { getRouteConfig, verifyRouteAccess } from '@/router/route.utils'
 
 // Create AuthContext
-const AuthContext = createContext({
-  logout: () => {},
-  isInitialized: false
-});
+const AuthContext = createContext()
 
-// useAuth hook
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth must be used within AuthContext.Provider');
+    throw new Error('useAuth must be used within AuthContext.Provider')
   }
-  return context;
-};
-
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full" />
-  </div>
-);
+  return context
+}
 
 const Root = () => {
-  const dispatch = useDispatch();
-  const { user, isInitialized } = useSelector((state) => state.user);
-  const [authInitialized, setAuthInitialized] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user, isInitialized } = useSelector((state) => state.user)
+  
+  const [authInitialized, setAuthInitialized] = useState(false)
 
-  // Initialize authentication
+  // Initialize authentication once
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
-        // Wait for ApperSDK to load
-        let attempts = 0;
-        while (!window.ApperSDK && attempts < 50) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
+        const { ApperUI } = window.ApperSDK || {}
+        
+        if (!ApperUI) {
+          console.warn('ApperSDK not loaded')
+          setAuthInitialized(true)
+          dispatch(setInitialized(true))
+          return
         }
 
-        if (!window.ApperSDK) {
-          throw new Error('ApperSDK failed to load');
+        // Setup ApperUI with callbacks
+        ApperUI.onSuccess = (user) => {
+          console.log('Auth success:', user)
+          dispatch(setUser(user))
+          dispatch(setInitialized(true))
+          handleNavigation(user)
         }
 
-        const { ApperUI } = window.ApperSDK;
+        ApperUI.onError = (error) => {
+          console.error('Auth error:', error)
+          dispatch(clearUser())
+          dispatch(setInitialized(true))
+        }
 
-        // Configure ApperUI callbacks
-        ApperUI.configure({
-          onSuccess: (userData) => {
-            console.log('Authentication successful:', userData);
-            dispatch(setUser(userData));
-            dispatch(setInitialized(true));
-            setAuthInitialized(true);
-            handleNavigation();
-          },
-          onError: (error) => {
-            console.error('Authentication error:', error);
-            dispatch(clearUser());
-            dispatch(setInitialized(true));
-            setAuthInitialized(true);
-          }
-        });
-
-        // Check existing session
-        ApperUI.initialize();
+        // Check if user is already authenticated
+        const currentUser = ApperUI.getCurrentUser?.() || null
+        if (currentUser) {
+          dispatch(setUser(currentUser))
+        } else {
+          dispatch(clearUser())
+        }
+        
+        dispatch(setInitialized(true))
+        setAuthInitialized(true)
       } catch (error) {
-        console.error('Failed to initialize authentication:', error);
-        dispatch(setInitialized(true));
-        setAuthInitialized(true);
+        console.error('Auth initialization error:', error)
+        dispatch(clearUser())
+        dispatch(setInitialized(true))
+        setAuthInitialized(true)
       }
-    };
+    }
 
-    initializeAuth();
-  }, [dispatch]);
+    initializeAuth()
+  }, [dispatch])
 
   // Route guard effect
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized) return
 
-    const config = getRouteConfig(location.pathname);
-    const accessCheck = verifyRouteAccess(config, user);
+    const config = getRouteConfig(location.pathname)
+    const accessCheck = verifyRouteAccess(config, user)
 
     if (!accessCheck.allowed && accessCheck.redirectTo) {
       const redirectUrl = accessCheck.excludeRedirectQuery 
         ? accessCheck.redirectTo
-        : `${accessCheck.redirectTo}?redirect=${encodeURIComponent(location.pathname + location.search)}`;
+        : `${accessCheck.redirectTo}?redirect=${encodeURIComponent(location.pathname + location.search)}`
       
-      navigate(redirectUrl);
+      navigate(redirectUrl)
     }
-  }, [isInitialized, user, location.pathname, location.search, navigate]);
+  }, [isInitialized, user, location.pathname, location.search, navigate])
 
   // Handle post-authentication navigation
-  const handleNavigation = () => {
-    const urlParams = new URLSearchParams(location.search);
-    const redirectPath = urlParams.get("redirect");
-    const authPages = ["/login", "/signup", "/callback"];
-    const isOnAuthPage = authPages.some(page => location.pathname.includes(page));
-
+  const handleNavigation = (authenticatedUser) => {
+    const urlParams = new URLSearchParams(location.search)
+    const redirectPath = urlParams.get("redirect")
+    
     if (redirectPath) {
-      navigate(redirectPath);
-    } else if (isOnAuthPage) {
-      navigate("/");
+      navigate(redirectPath)
+    } else if (["/login", "/signup", "/callback"].includes(location.pathname)) {
+      navigate("/")
     }
     // Otherwise stay on current page
-  };
+  }
 
   // Logout function
   const logout = async () => {
     try {
-      if (window.ApperSDK?.ApperUI) {
-        await window.ApperSDK.ApperUI.signOut();
+      const { ApperUI } = window.ApperSDK || {}
+      if (ApperUI?.logout) {
+        await ApperUI.logout()
       }
-      dispatch(clearUser());
-      navigate('/login');
+      dispatch(clearUser())
+      navigate('/login')
     } catch (error) {
-      console.error('Logout failed:', error);
-      dispatch(clearUser());
-      navigate('/login');
+      console.error('Logout error:', error)
+      dispatch(clearUser())
+      navigate('/login')
     }
-  };
+  }
 
   // Show loading spinner until auth is initialized
   if (!authInitialized) {
-    return <LoadingSpinner />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full" />
+      </div>
+    )
   }
 
-  const authContextValue = {
-    logout,
-    isInitialized
-  };
-
   return (
-    <AuthContext.Provider value={authContextValue}>
+    <AuthContext.Provider value={{ logout, isInitialized }}>
       <Outlet />
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
-export default Root;
+export default Root

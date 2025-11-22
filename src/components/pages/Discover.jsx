@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import StoryGrid from "@/components/organisms/StoryGrid";
 import GenreFilter from "@/components/molecules/GenreFilter";
+import DetailedFilters from "@/components/molecules/DetailedFilters";
 import Loading from "@/components/ui/Loading";
 import { storyService } from "@/services/api/storyService";
 import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
 const Discover = () => {
-  const [searchParams] = useSearchParams()
+const [searchParams] = useSearchParams()
   const [stories, setStories] = useState([])
   const [filteredStories, setFilteredStories] = useState([])
   const [featuredStories, setFeaturedStories] = useState([])
@@ -15,6 +16,9 @@ const Discover = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedGenres, setSelectedGenres] = useState([])
+  const [selectedStatus, setSelectedStatus] = useState([])
+  const [selectedLength, setSelectedLength] = useState([])
+  const [selectedRating, setSelectedRating] = useState([])
   const [activeTab, setActiveTab] = useState("all")
 
   const searchQuery = searchParams.get("search")
@@ -23,11 +27,11 @@ const Discover = () => {
     loadStories()
   }, [])
 
-  useEffect(() => {
+useEffect(() => {
     filterStories()
-  }, [stories, selectedGenres, searchQuery, activeTab])
+  }, [stories, selectedGenres, selectedStatus, selectedLength, selectedRating, searchQuery, activeTab])
 
-  const loadStories = async () => {
+const loadStories = async () => {
     try {
       setLoading(true)
       setError("")
@@ -44,18 +48,72 @@ const Discover = () => {
     }
   }
 
-  const filterStories = () => {
+const filterStories = () => {
     let filtered = [...stories]
 
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(story =>
-        story.title.toLowerCase().includes(query) ||
-        story.authorName.toLowerCase().includes(query) ||
-        story.description.toLowerCase().includes(query) ||
-        story.genres.some(genre => genre.toLowerCase().includes(query))
-      )
+    // Apply search and detailed filters
+    if (searchQuery || selectedStatus.length > 0 || selectedLength.length > 0 || selectedRating.length > 0) {
+      const filterOptions = {
+        status: selectedStatus,
+        length: selectedLength,
+        rating: selectedRating
+      }
+      
+      // Use service search method for consistency
+      filtered = stories.filter(story => {
+        // Text search
+        let matchesText = true
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase()
+          matchesText = story.title.toLowerCase().includes(query) ||
+            story.authorName.toLowerCase().includes(query) ||
+            story.description.toLowerCase().includes(query) ||
+            story.genres.some(genre => genre.toLowerCase().includes(query))
+        }
+        
+        // Status filter
+        let matchesStatus = true
+        if (filterOptions.status.length > 0) {
+          matchesStatus = filterOptions.status.includes(story.status)
+        }
+        
+        // Length filter
+        let matchesLength = true
+        if (filterOptions.length.length > 0) {
+          const wordCount = story.wordCount || 0
+          matchesLength = filterOptions.length.some(range => {
+            switch (range) {
+              case 'short':
+                return wordCount < 5000
+              case 'medium':
+                return wordCount >= 5000 && wordCount <= 20000
+              case 'long':
+                return wordCount > 20000
+              default:
+                return true
+            }
+          })
+        }
+        
+        // Rating filter
+        let matchesRating = true
+        if (filterOptions.rating.length > 0) {
+          const rating = story.rating || 0
+          matchesRating = filterOptions.rating.some(minRating => {
+            switch (minRating) {
+              case '4+':
+                return rating >= 4.0
+              case '3+':
+                return rating >= 3.0
+              case 'all':
+              default:
+                return true
+            }
+          })
+        }
+        
+        return matchesText && matchesStatus && matchesLength && matchesRating
+      })
     }
 
     // Apply genre filter
@@ -68,16 +126,20 @@ const Discover = () => {
     // Apply tab filter
     switch (activeTab) {
       case "featured":
-        filtered = featuredStories.filter(story => 
-          !searchQuery || 
-          story.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        const featuredFiltered = featuredStories
+        if (searchQuery || selectedGenres.length > 0 || selectedStatus.length > 0 || selectedLength.length > 0 || selectedRating.length > 0) {
+          filtered = featuredFiltered.filter(story => filtered.some(f => f.Id === story.Id))
+        } else {
+          filtered = featuredFiltered
+        }
         break
       case "trending":
-        filtered = trendingStories.filter(story =>
-          !searchQuery ||
-          story.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        const trendingFiltered = trendingStories
+        if (searchQuery || selectedGenres.length > 0 || selectedStatus.length > 0 || selectedLength.length > 0 || selectedRating.length > 0) {
+          filtered = trendingFiltered.filter(story => filtered.some(f => f.Id === story.Id))
+        } else {
+          filtered = trendingFiltered
+        }
         break
       default:
         // 'all' - no additional filtering needed
@@ -85,6 +147,16 @@ const Discover = () => {
     }
 
     setFilteredStories(filtered)
+  }
+
+  const handleClearDetailedFilters = () => {
+    setSelectedStatus([])
+    setSelectedLength([])
+    setSelectedRating([])
+  }
+
+  const getTotalFilterCount = () => {
+    return selectedGenres.length + selectedStatus.length + selectedLength.length + selectedRating.length
   }
 
   const handleToggleGenre = (genre) => {
@@ -151,13 +223,62 @@ const Discover = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar Filters */}
+{/* Sidebar Filters */}
         <div className="lg:col-span-1 space-y-6">
           <GenreFilter
             selectedGenres={selectedGenres}
             onToggleGenre={handleToggleGenre}
             onClear={handleClearGenres}
           />
+          
+          <DetailedFilters
+            selectedStatus={selectedStatus}
+            selectedLength={selectedLength}
+            selectedRating={selectedRating}
+            onToggleStatus={(status) => {
+              setSelectedStatus(prev => 
+                prev.includes(status) 
+                  ? prev.filter(s => s !== status)
+                  : [...prev, status]
+              )
+            }}
+            onToggleLength={(length) => {
+              setSelectedLength(prev => 
+                prev.includes(length) 
+                  ? prev.filter(l => l !== length)
+                  : [...prev, length]
+              )
+            }}
+            onToggleRating={(rating) => {
+              setSelectedRating(prev => 
+                prev.includes(rating) 
+                  ? prev.filter(r => r !== rating)
+                  : [...prev, rating]
+              )
+            }}
+            onClear={handleClearDetailedFilters}
+            totalCount={selectedStatus.length + selectedLength.length + selectedRating.length}
+          />
+
+          {/* Filter Summary */}
+          {getTotalFilterCount() > 0 && (
+            <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-ui text-primary font-medium">
+                  {getTotalFilterCount()} filter{getTotalFilterCount() !== 1 ? 's' : ''} applied
+                </span>
+                <button
+                  onClick={() => {
+                    handleClearGenres()
+                    handleClearDetailedFilters()
+                  }}
+                  className="text-xs text-accent hover:text-accent/80 font-ui font-medium"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="bg-surface/50 rounded-lg p-6 space-y-4">
@@ -176,6 +297,10 @@ const Discover = () => {
               <div className="flex justify-between">
                 <span className="text-secondary">Featured This Week</span>
                 <span className="text-primary font-semibold">{featuredStories.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-secondary">Filtered Results</span>
+                <span className="text-primary font-semibold">{filteredStories.length}</span>
               </div>
             </div>
           </div>
@@ -204,7 +329,7 @@ const Discover = () => {
           )}
 
           {/* Stories Grid */}
-          <StoryGrid
+<StoryGrid
             stories={filteredStories}
             loading={false}
             error={error}

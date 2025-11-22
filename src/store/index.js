@@ -1,32 +1,14 @@
-import { configureStore } from '@reduxjs/toolkit';
-import userSlice from './userSlice';
+import { configureStore } from '@reduxjs/toolkit'
+import userReducer from './userSlice'
 
 export const store = configureStore({
   reducer: {
-    user: userSlice
+    user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST']
-      }
-    })
-});
-
-export default store;
-import { configureStore } from '@reduxjs/toolkit';
-import userSlice from './userSlice';
-
-export const store = configureStore({
-  reducer: {
-    user: userSlice
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ['persist/PERSIST']
-      }
-    })
-});
-
-export default store;
+        ignoredActions: ['persist/PERSIST'],
+      },
+    }),
+})

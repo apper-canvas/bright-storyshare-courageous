@@ -1,5 +1,8 @@
-import chapterData from "@/services/mockData/chapters.json"
+import chapterData from "@/services/mockData/chapters.json";
+import { notificationService } from "@/services/api/notificationService";
+import { storyService } from "@/services/api/storyService";
 
+// Service implementation using class pattern
 class ChapterService {
   constructor() {
     this.chapters = [...chapterData]

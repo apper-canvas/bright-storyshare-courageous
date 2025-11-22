@@ -1,17 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import { useSelector } from "react-redux";
 import Header from "@/components/organisms/Header";
 
 const Layout = () => {
-  const { user, isAuthenticated } = useSelector((state) => state.user);
-  
-  // Create outlet context with app-level state
+  // App-level state that can be passed to routes via outlet context
+  const [globalState, setGlobalState] = useState({
+    searchQuery: '',
+    filters: {},
+    notifications: []
+  })
+
   const outletContext = {
-    user,
-    isAuthenticated
-  };
+    globalState,
+    setGlobalState,
+    // Add other app-level methods and state here
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,22 +22,8 @@ const Layout = () => {
       <main>
         <Outlet context={outletContext} />
       </main>
-      
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        className="toast-container"
-        style={{ zIndex: 9999 }}
-      />
     </div>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout
