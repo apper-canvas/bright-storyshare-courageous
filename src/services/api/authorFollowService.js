@@ -1,198 +1,110 @@
-import { getApperClient } from '@/services/apperClient';
-import { toast } from 'react-toastify';
+// Mock service for author following functionality
+// In production, this would connect to a database with author_follows table
 
 class AuthorFollowService {
   constructor() {
-    this.tableName = 'authorFollows_c';
+    this.STORAGE_KEY = 'author_follows'
+    this.initializeStorage()
   }
 
-  async follow(authorId, authorName, userId = "user1") {
+  initializeStorage() {
+    if (!localStorage.getItem(this.STORAGE_KEY)) {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify([]))
+    }
+  }
+
+  getFollows() {
     try {
-      // Check if already following
-      const isFollowing = await this.isFollowing(authorId);
-      if (isFollowing) {
-        return true;
-      }
+      return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]')
+    } catch (error) {
+      console.error('Failed to parse follows from storage:', error)
+      return []
+    }
+  }
 
-      const apperClient = getApperClient();
-      const response = await apperClient.createRecord(this.tableName, {
-        records: [{
-          Name: `Follow ${authorName}`,
-          authorId_c: authorId,
-          authorName_c: authorName,
-          followedAt_c: new Date().toISOString()
-        }]
-      });
+  saveFollows(follows) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(follows))
+    } catch (error) {
+      console.error('Failed to save follows to storage:', error)
+    }
+  }
 
-      if (!response.success) {
-        console.error(response.message);
-        toast.error(response.message);
-        return false;
-      }
-
-      if (response.results) {
-        const successful = response.results.filter(r => r.success);
-        const failed = response.results.filter(r => !r.success);
+  async follow(authorId, authorName) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const follows = this.getFollows()
+        const existingFollow = follows.find(f => f.authorId === authorId)
         
-        if (failed.length > 0) {
-          console.error(`Failed to create ${failed.length} follows:`, failed);
-          failed.forEach(record => {
-            record.errors?.forEach(error => toast.error(`${error.fieldLabel}: ${error}`));
-            if (record.message) toast.error(record.message);
-          });
+        if (!existingFollow) {
+          const newFollow = {
+            Id: Math.max(...follows.map(f => f.Id), 0) + 1,
+            authorId,
+            authorName,
+            followedAt: new Date().toISOString()
+          }
+          follows.push(newFollow)
+          this.saveFollows(follows)
         }
         
-        return successful.length > 0;
-      }
-
-    } catch (error) {
-      console.error("Error following author:", error?.response?.data?.message || error);
-      return false;
-    }
+        resolve(true)
+      }, 300) // Simulate API delay
+    })
   }
 
   async unfollow(authorId) {
-    try {
-      // Find the follow record first
-      const apperClient = getApperClient();
-      const response = await apperClient.fetchRecords(this.tableName, {
-        fields: [{"field": {"Name": "Id"}}],
-        where: [{
-          "FieldName": "authorId_c",
-          "Operator": "EqualTo",
-          "Values": [authorId]
-        }]
-      });
-
-      if (!response.success || !response.data?.length) {
-        return true; // Already not following
-      }
-
-      // Delete the follow record
-      const deleteResponse = await apperClient.deleteRecord(this.tableName, {
-        RecordIds: [response.data[0].Id]
-      });
-
-      if (!deleteResponse.success) {
-        console.error(deleteResponse.message);
-        toast.error(deleteResponse.message);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error unfollowing author:", error?.response?.data?.message || error);
-      return false;
-    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const follows = this.getFollows()
+        const filteredFollows = follows.filter(f => f.authorId !== authorId)
+        this.saveFollows(filteredFollows)
+        resolve(true)
+      }, 300) // Simulate API delay
+    })
   }
 
   async isFollowing(authorId) {
-    try {
-      const apperClient = getApperClient();
-      const response = await apperClient.fetchRecords(this.tableName, {
-        fields: [{"field": {"Name": "Id"}}],
-        where: [{
-          "FieldName": "authorId_c",
-          "Operator": "EqualTo",
-          "Values": [authorId]
-        }]
-      });
-
-      if (!response.success) {
-        console.error(response.message);
-        return false;
-      }
-
-      return (response.data?.length || 0) > 0;
-    } catch (error) {
-      console.error("Error checking if following:", error?.response?.data?.message || error);
-      return false;
-    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const follows = this.getFollows()
+        const isFollowing = follows.some(f => f.authorId === authorId)
+        resolve(isFollowing)
+      }, 100)
+    })
   }
 
   async getFollowedAuthors() {
-    try {
-      const apperClient = getApperClient();
-      const response = await apperClient.fetchRecords(this.tableName, {
-        fields: [
-          {"field": {"Name": "Id"}},
-          {"field": {"Name": "Name"}},
-          {"field": {"Name": "authorId_c"}},
-          {"field": {"Name": "authorName_c"}},
-          {"field": {"Name": "followedAt_c"}},
-          {"field": {"Name": "CreatedOn"}}
-        ],
-        orderBy: [{"fieldName": "followedAt_c", "sorttype": "DESC"}]
-      });
-
-      if (!response.success) {
-        console.error(response.message);
-        toast.error(response.message);
-        return [];
-      }
-
-      return response.data || [];
-    } catch (error) {
-      console.error("Error fetching followed authors:", error?.response?.data?.message || error);
-      return [];
-    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const follows = this.getFollows()
+        resolve([...follows])
+      }, 200)
+    })
   }
 
   async getFollowerCount(authorId) {
-    try {
-      const apperClient = getApperClient();
-      const response = await apperClient.fetchRecords(this.tableName, {
-        fields: [{"field": {"Name": "Id"}}],
-        where: [{
-          "FieldName": "authorId_c",
-          "Operator": "EqualTo",
-          "Values": [authorId]
-        }]
-      });
-
-      if (!response.success) {
-        console.error(response.message);
-        return 0;
-      }
-
-      return response.data?.length || 0;
-    } catch (error) {
-      console.error("Error fetching follower count:", error?.response?.data?.message || error);
-      return 0;
-    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Mock follower count - in production this would be a proper count from database
+        const follows = this.getFollows()
+        const isFollowing = follows.some(f => f.authorId === authorId)
+        // Return a mock count that changes based on follow status
+        const baseCount = Math.floor(Math.random() * 100) + 10
+        const count = isFollowing ? baseCount + 1 : baseCount
+        resolve(count)
+      }, 100)
+    })
   }
 
   async getFollowersForAuthor(authorId) {
-    try {
-      const apperClient = getApperClient();
-      const response = await apperClient.fetchRecords(this.tableName, {
-        fields: [
-          {"field": {"Name": "Id"}},
-          {"field": {"Name": "Name"}},
-          {"field": {"Name": "authorId_c"}},
-          {"field": {"Name": "authorName_c"}},
-          {"field": {"Name": "followedAt_c"}},
-          {"field": {"Name": "CreatedOn"}}
-        ],
-        where: [{
-          "FieldName": "authorId_c",
-          "Operator": "EqualTo",
-          "Values": [authorId]
-        }]
-      });
-
-      if (!response.success) {
-        console.error(response.message);
-        toast.error(response.message);
-        return [];
-      }
-
-      return response.data || [];
-    } catch (error) {
-      console.error("Error fetching followers for author:", error?.response?.data?.message || error);
-      return [];
-    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const follows = this.getFollows()
+        const followers = follows.filter(f => f.authorId === authorId)
+        resolve([...followers])
+      }, 200)
+    })
   }
 }
 
-export const authorFollowService = new AuthorFollowService();
+export const authorFollowService = new AuthorFollowService()
