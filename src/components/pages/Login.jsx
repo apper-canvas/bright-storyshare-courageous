@@ -37,7 +37,7 @@ const [formData, setFormData] = useState({
     if (error) setError('')
   }
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
@@ -54,19 +54,40 @@ const [formData, setFormData] = useState({
         return
       }
 
-      // Here you would integrate with your authentication system
-      // For now, we'll simulate the login process
-      console.log('Login attempt:', { email: formData.email })
+      // Check if user is already authenticated
+      const { user } = useSelector((state) => state.user)
+      if (user) {
+        // Handle navigation for already authenticated users
+        const urlParams = new URLSearchParams(location.search)
+        const redirectPath = urlParams.get("redirect")
+        
+        if (redirectPath) {
+          navigate(redirectPath)
+        } else {
+          navigate('/discover')
+        }
+        return
+      }
+
+      // Integrate with ApperUI authentication system
+      const { ApperUI } = window.ApperSDK || {}
       
-      // TODO: Replace with actual authentication logic
-      // const { ApperUI } = window.ApperSDK || {}
-      // if (ApperUI) {
-      //   await ApperUI.login(formData.email, formData.password)
-      // }
+      if (!ApperUI) {
+        setError('Authentication system not available. Please refresh the page.')
+        return
+      }
+
+      // Use ApperUI's login functionality
+      // This will trigger the onSuccess/onError handlers in Root.jsx
+      // which manage Redux state updates and navigation
+      await ApperUI.login(formData.email, formData.password)
       
-      setError('Authentication integration needed - please implement login logic')
+      // The authentication success/error will be handled by Root.jsx
+      // No need for manual navigation here as Root.jsx handles it
+      
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.')
+      // Handle authentication errors
+      setError(err.message || 'Login failed. Please check your credentials and try again.')
     } finally {
       setIsLoading(false)
     }
