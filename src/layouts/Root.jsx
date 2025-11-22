@@ -1,147 +1,230 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUser, clearUser, setInitialized } from '@/store/userSlice';
-import { getRouteConfig, verifyRouteAccess } from '@/router/route.utils';
-import { ToastContainer } from 'react-toastify';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { getRouteConfig, verifyRouteAccess } from "@/router/route.utils";
+import Loading from "@/components/ui/Loading";
+import { clearUser, setUser } from "@/store/userSlice";
 
-const AuthContext = createContext();
+// Create Auth Context
+const AuthContext = createContext(null);
 
-const Root = () => {
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
+const AuthProvider = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUserState] = useState(null);
+  const [apperUI, setApperUI] = useState(null);
+  const [sdkError, setSdkError] = useState(null);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, isInitialized } = useSelector((state) => state.user);
-  
-  const [authInitialized, setAuthInitialized] = useState(false);
+
+  // Initialize ApperUI SDK
+  useEffect(() => {
+    const initializeSDK = async () => {
+      try {
+        setIsLoading(true);
+        setSdkError(null);
+
+        // Poll for SDK availability with timeout
+        const maxAttempts = 50; // 5 seconds with 100ms intervals
+        let attempts = 0;
+
+        const checkSDK = () => {
+          return new Promise((resolve, reject) => {
+            const checkAvailability = () => {
+              if (!window.ApperSDK) {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                  reject(new Error('ApperSDK not loaded after timeout'));
+                  return;
+                }
+                setTimeout(checkAvailability, 100);
+                return;
+              }
+
+              const { ApperUI } = window.ApperSDK;
+              
+              if (!ApperUI || typeof ApperUI.init !== 'function') {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                  reject(new Error('ApperUI not available or init method missing'));
+                  return;
+                }
+                setTimeout(checkAvailability, 100);
+                return;
+              }
+
+              resolve(ApperUI);
+            };
+
+            checkAvailability();
+          });
+        };
+
+        const apperUIInstance = await checkSDK();
+        
+        // Initialize ApperUI
+        await apperUIInstance.init({
+          projectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          publicKey: import.meta.env.VITE_APPER_PUBLIC_KEY,
+          onAuthStateChange: (authUser) => {
+            if (authUser) {
+              setIsAuthenticated(true);
+              setUserState(authUser);
+              dispatch(setUser(authUser));
+            } else {
+              setIsAuthenticated(false);
+              setUserState(null);
+              dispatch(clearUser());
+            }
+          }
+        });
+
+        setApperUI(apperUIInstance);
+        
+        // Check initial auth state
+        const currentUser = await apperUIInstance.getCurrentUser();
+        if (currentUser) {
+          setIsAuthenticated(true);
+          setUserState(currentUser);
+          dispatch(setUser(currentUser));
+        }
+
+      } catch (error) {
+        console.error('Failed to initialize ApperUI:', error);
+        setSdkError(error.message);
+        toast.error(`Authentication system failed to initialize: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeSDK();
+  }, [dispatch]);
+
+  // Authentication methods
+  const login = async (email, password) => {
+    if (!apperUI) {
+      throw new Error('Authentication system not initialized');
+    }
+    
+    try {
+      const result = await apperUI.signIn(email, password);
+      if (result.user) {
+        setIsAuthenticated(true);
+        setUserState(result.user);
+        dispatch(setUser(result.user));
+        toast.success('Successfully signed in!');
+      }
+      return result;
+    } catch (error) {
+      toast.error(error.message || 'Sign in failed');
+      throw error;
+    }
+  };
+
+  const signup = async (email, password, metadata = {}) => {
+    if (!apperUI) {
+      throw new Error('Authentication system not initialized');
+    }
+    
+    try {
+      const result = await apperUI.signUp(email, password, metadata);
+      if (result.user) {
+        toast.success('Account created successfully!');
+      }
+      return result;
+    } catch (error) {
+      toast.error(error.message || 'Sign up failed');
+      throw error;
+    }
+  };
 
   const logout = async () => {
-    try {
-      const { ApperUI } = window.ApperSDK;
-      await ApperUI.logout();
-      dispatch(clearUser());
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Force logout even if API call fails
-      dispatch(clearUser());
-      navigate('/login');
+    if (!apperUI) {
+      throw new Error('Authentication system not initialized');
     }
-  };
-
-const initializeAuth = async () => {
-    try {
-      if (!window.ApperSDK) {
-        throw new Error('ApperSDK not loaded');
-      }
-
-      const { ApperUI } = window.ApperSDK;
-      
-      if (!ApperUI || typeof ApperUI.init !== 'function') {
-        throw new Error('ApperUI not available or init method missing');
-      }
-      
-      ApperUI.init({
-        onSuccess: (userData) => {
-          console.log('Auth success:', userData);
-          dispatch(setUser(userData));
-          dispatch(setInitialized(true));
-          handleNavigation(userData);
-        },
-        onError: (error) => {
-          console.log('Auth error:', error);
-          dispatch(clearUser());
-          dispatch(setInitialized(true));
-        }
-      });
-    } catch (error) {
-      console.error('Auth initialization failed:', error);
-      dispatch(clearUser());
-      dispatch(setInitialized(true));
-    } finally {
-      setAuthInitialized(true);
-    }
-  };
-
-  const handleNavigation = (userData) => {
-    const urlParams = new URLSearchParams(location.search);
-    const redirectPath = urlParams.get('redirect');
     
-    if (redirectPath) {
-      navigate(redirectPath);
-    } else {
-      const authPages = ["/login", "/signup", "/callback"];
-      const isOnAuthPage = authPages.some(page => location.pathname.includes(page));
-      
-      if (isOnAuthPage) {
-        navigate('/');
-      }
+    try {
+      await apperUI.signOut();
+      setIsAuthenticated(false);
+      setUserState(null);
+      dispatch(clearUser());
+      toast.success('Successfully signed out!');
+    } catch (error) {
+      toast.error('Sign out failed');
+      throw error;
     }
   };
 
-  // Initialize auth once
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
-  // Route guard effect
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const config = getRouteConfig(location.pathname);
-    const accessCheck = verifyRouteAccess(config, user);
-
-    if (!accessCheck.allowed && accessCheck.redirectTo) {
-      const currentPath = `${location.pathname}${location.search}`;
-      const redirectUrl = accessCheck.excludeRedirectQuery
-        ? accessCheck.redirectTo
-        : `${accessCheck.redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
-      
-      navigate(redirectUrl);
+  const resetPassword = async (email) => {
+    if (!apperUI) {
+      throw new Error('Authentication system not initialized');
     }
-  }, [isInitialized, user, location.pathname, location.search, navigate]);
+    
+    try {
+      await apperUI.resetPassword(email);
+      toast.success('Password reset email sent!');
+    } catch (error) {
+      toast.error(error.message || 'Password reset failed');
+      throw error;
+    }
+  };
 
-  // Show loading until auth is initialized
-  if (!authInitialized) {
+  const authContextValue = {
+    isLoading,
+    isAuthenticated,
+    user,
+    login,
+    signup,
+    logout,
+    resetPassword,
+    apperUI,
+    sdkError
+  };
+
+  // Show loading screen while SDK initializes
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center space-y-4">
-          <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-primary font-medium">Initializing authentication system...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error screen if SDK failed to load
+  if (sdkError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-error text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-primary mb-2">Authentication System Error</h2>
+          <p className="text-gray-600 mb-4">{sdkError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-accent text-primary px-6 py-2 rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <AuthContext.Provider value={{ logout, isInitialized }}>
-      <Outlet />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        className="toast-container"
-        style={{ zIndex: 9999 }}
-      />
+    <AuthContext.Provider value={authContextValue}>
+      {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthContext provider');
-  }
-  return context;
-};
-
-export default Root;
+export default AuthProvider;
