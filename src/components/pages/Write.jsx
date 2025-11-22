@@ -23,13 +23,11 @@ const [stories, setStories] = useState([]);
   useEffect(() => {
     loadMyStories();
   }, []);
-  const loadMyStories = async () => {
 const loadMyStories = async () => {
     try {
       setLoading(true);
       setError("");
       // Mock: Get all stories and filter by "current user"
-// Mock: Get all stories and filter by "current user"
       const allStories = await storyService.getAll();
       // In a real app, this would filter by actual user ID
       const myStories = allStories.slice(0, 3); // Mock user stories
@@ -39,21 +37,23 @@ const loadMyStories = async () => {
     } finally {
       setLoading(false);
     }
-  };
-const handleDeleteStory = async (storyId) => {
+};
+
+  const handleDeleteStory = async (storyId) => {
     if (!window.confirm("Are you sure you want to delete this story? This action cannot be undone.")) {
       return;
     }
-try {
+    try {
       await storyService.delete(storyId);
       setStories(prev => prev.filter(story => story.Id !== storyId));
       toast.success("Story deleted successfully");
     } catch (err) {
       toast.error("Failed to delete story");
     }
-  };
+};
+
   const getStatusBadge = (story) => {
-if (story.status === "completed") {
+    if (story.status === "completed") {
       return <Badge variant="success" size="sm">Completed</Badge>;
     }
     if (story.chapterCount === 0) {
