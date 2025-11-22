@@ -1,19 +1,29 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
-import Header from "@/components/organisms/Header";
+import React from "react"
+import { Outlet } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
+import Header from "@/components/organisms/Header"
 
 const Layout = () => {
-  const outletContext = {
-    // Add any app-level state or methods that need to be passed to child routes
-    appName: "StoryShare"
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <Outlet context={outletContext} />
+        <Outlet />
       </main>
+      
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        className="toast-container"
+        style={{ zIndex: 9999 }}
+      />
     </div>
   )
 }
