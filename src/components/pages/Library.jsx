@@ -160,8 +160,8 @@ return (
           >
             <ApperIcon name={tab.icon} size={16} />
             {tab.label}
-            <Badge variant="genre" size="sm">
-              {tab.stories.length}
+<Badge variant="genre" size="sm">
+              {tab.key === 'reading-lists' ? tab.lists?.length || 0 : tab.stories?.length || 0}
             </Badge>
           </button>
         ))}
@@ -206,10 +206,10 @@ return (
               </div>
             )}
           </div>
-        ) : activeTabData?.stories.length === 0 ? (
+) : activeTabData?.stories?.length === 0 ? (
           <Empty 
-            type="library"
-            title={`No ${activeTabData.label.toLowerCase()} stories`}
+type="library"
+            title={`No ${activeTabData?.label?.toLowerCase() || 'library'} stories`}
             description={
               activeTab === "currently-reading" 
                 ? "Add stories to your library and start reading to populate this section."
@@ -222,7 +222,7 @@ return (
           />
         ) : (
           <StoryGrid
-            stories={activeTabData?.stories || []}
+stories={activeTabData?.stories || []}
             loading={false}
             error={error}
             onRetry={loadLibrary}
@@ -234,13 +234,13 @@ return (
       </div>
 
       {/* Reading Progress Section */}
-      {activeTab === "currently-reading" && activeTabData?.stories.length > 0 && (
+{activeTab === "currently-reading" && activeTabData?.stories?.length > 0 && (
         <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-lg p-6">
           <h3 className="text-xl font-display font-semibold text-primary mb-4">
             Your Reading Progress
           </h3>
           <div className="space-y-4">
-            {activeTabData.stories.slice(0, 3).map((story) => {
+{activeTabData?.stories?.slice(0, 3).map((story) => {
               const progress = Math.floor(Math.random() * 80) + 10 // Mock progress
               return (
                 <div key={story.Id} className="flex items-center gap-4">
