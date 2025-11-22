@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@/layouts/Root";
 import { useNavigate, useParams } from "react-router-dom";
 import { storyService } from "@/services/api/storyService";
 import { chapterService } from "@/services/api/chapterService";

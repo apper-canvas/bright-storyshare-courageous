@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import { useAuth } from "@/layouts/Root"
 import { useNavigate } from "react-router-dom"
 import StoryGrid from "@/components/organisms/StoryGrid"
 import Button from "@/components/atoms/Button"

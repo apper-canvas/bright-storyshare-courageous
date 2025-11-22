@@ -1,27 +1,29 @@
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
-import Header from "@/components/organisms/Header";
+import React from "react"
+import { Outlet } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
+import Header from "@/components/organisms/Header"
 
 const Layout = () => {
-  // App-level state that can be passed to routes via outlet context
-  const [globalState, setGlobalState] = useState({
-    searchQuery: '',
-    filters: {},
-    notifications: []
-  })
-
-  const outletContext = {
-    globalState,
-    setGlobalState,
-    // Add other app-level methods and state here
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <Outlet context={outletContext} />
+        <Outlet />
       </main>
+      
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        className="toast-container"
+        style={{ zIndex: 9999 }}
+      />
     </div>
   )
 }
