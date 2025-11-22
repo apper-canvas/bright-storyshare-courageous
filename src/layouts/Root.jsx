@@ -45,26 +45,34 @@ const Root = () => {
           throw new Error('ApperSDK failed to load')
         }
 
-        const { ApperUI } = window.ApperSDK
+const { ApperClient } = window.ApperSDK
 
-        // Initialize ApperUI with callbacks
-        await ApperUI.initialize({
-          onSuccess: (userData) => {
-            dispatch(setUser(userData))
-            dispatch(setInitialized(true))
-            handleNavigation(userData)
-          },
-          onError: (error) => {
-            console.error('Authentication error:', error)
-            dispatch(clearUser())
-            dispatch(setInitialized(true))
-            
-            // Navigate to error page with error details
-            if (error?.message) {
-              navigate(`/error?message=${encodeURIComponent(error.message)}`)
-            }
-          }
+        // Initialize ApperClient
+        const apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
         })
+
+        try {
+          // Check if user is already authenticated
+          const userData = await apperClient.auth.getUser()
+          if (userData) {
+            dispatch(setUser(userData))
+            handleNavigation(userData)
+          } else {
+            dispatch(clearUser())
+          }
+        } catch (error) {
+          console.error('Authentication error:', error)
+          dispatch(clearUser())
+          
+          // Navigate to error page with error details
+          if (error?.message) {
+            navigate(`/error?message=${encodeURIComponent(error.message)}`)
+          }
+        } finally {
+          dispatch(setInitialized(true))
+        }
 
       } catch (error) {
         console.error('Failed to initialize authentication:', error)
@@ -116,10 +124,14 @@ const Root = () => {
   }, [isInitialized, user, location.pathname, location.search, navigate])
 
   // Logout function
-  const logout = async () => {
+const logout = async () => {
     try {
-      const { ApperUI } = window.ApperSDK
-      await ApperUI.signOut()
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      await apperClient.auth.signOut()
       dispatch(clearUser())
       navigate('/login')
     } catch (error) {
