@@ -44,18 +44,16 @@ const Root = () => {
         if (!window.ApperSDK) {
           throw new Error('ApperSDK failed to load')
         }
-
-const { ApperClient } = window.ApperSDK
+const { ApperClient, ApperUI } = window.ApperSDK
 
         // Initialize ApperClient
         const apperClient = new ApperClient({
           apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
           apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
         })
-
-        try {
+try {
           // Check if user is already authenticated
-          const userData = await apperClient.auth.getUser()
+          const userData = await ApperUI.getUser()
           if (userData) {
             dispatch(setUser(userData))
             handleNavigation(userData)
@@ -126,12 +124,8 @@ const { ApperClient } = window.ApperSDK
   // Logout function
 const logout = async () => {
     try {
-      const { ApperClient } = window.ApperSDK
-      const apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      })
-      await apperClient.auth.signOut()
+      const { ApperUI } = window.ApperSDK
+      await ApperUI.signOut()
       dispatch(clearUser())
       navigate('/login')
     } catch (error) {
