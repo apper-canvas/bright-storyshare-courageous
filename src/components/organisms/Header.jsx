@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/layouts/Root";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
@@ -82,7 +83,7 @@ const navItems = [
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-3">
+<div className="hidden lg:flex items-center gap-3">
             <Button
               variant="primary"
               onClick={() => navigate("/write/new")}
@@ -90,6 +91,18 @@ const navItems = [
             >
               <ApperIcon name="Plus" size={16} />
               New Story
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => {
+                const { logout } = useAuth()
+                logout()
+              }}
+              className="inline-flex items-center gap-2"
+            >
+              <ApperIcon name="LogOut" size={16} />
+              Logout
             </Button>
           </div>
 
@@ -137,7 +150,7 @@ const navItems = [
               ))}
             </nav>
             
-            <div className="mt-6 pt-4 border-t border-surface">
+<div className="mt-6 pt-4 border-t border-surface space-y-3">
               <Button
                 variant="primary"
                 onClick={() => {
@@ -148,6 +161,19 @@ const navItems = [
               >
                 <ApperIcon name="Plus" size={16} />
                 New Story
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const { logout } = useAuth()
+                  logout()
+                  setIsMenuOpen(false)
+                }}
+                className="w-full inline-flex items-center justify-center gap-2"
+              >
+                <ApperIcon name="LogOut" size={16} />
+                Logout
               </Button>
             </div>
           </div>
