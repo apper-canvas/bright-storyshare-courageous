@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useOutletContext } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import StoryGrid from "@/components/organisms/StoryGrid";
 import GenreFilter from "@/components/molecules/GenreFilter";
 import DetailedFilters from "@/components/molecules/DetailedFilters";
@@ -7,11 +7,7 @@ import Loading from "@/components/ui/Loading";
 import { storyService } from "@/services/api/storyService";
 import { toast } from "react-toastify";
 import { cn } from "@/utils/cn";
-import { useAuth } from "@/layouts/Root";
-
 const Discover = () => {
-  const outletContext = useOutletContext()
-  const { user } = useAuth()
 const [searchParams] = useSearchParams()
   const [stories, setStories] = useState([])
   const [filteredStories, setFilteredStories] = useState([])

@@ -1,66 +1,66 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
-import { storyService } from "@/services/api/storyService";
-import { toast } from "react-toastify";
-import { useAuth } from "@/layouts/Root";
-import ApperIcon from "@/components/ApperIcon";
-import Loading from "@/components/ui/Loading";
-import ErrorView from "@/components/ui/ErrorView";
-import Empty from "@/components/ui/Empty";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
-import Badge from "@/components/atoms/Badge";
-import { formatDate, formatNumber } from "@/utils/formatters";
+import React, { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import ApperIcon from "@/components/ApperIcon"
+import Button from "@/components/atoms/Button"
+import Card from "@/components/atoms/Card"
+import Badge from "@/components/atoms/Badge"
+import Loading from "@/components/ui/Loading"
+import Empty from "@/components/ui/Empty"
+import ErrorView from "@/components/ui/ErrorView"
+import { storyService } from "@/services/api/storyService"
+import { formatDate, formatNumber } from "@/utils/formatters"
+import { toast } from "react-toastify"
 
 const Write = () => {
-  const navigate = useNavigate();
-  const outletContext = useOutletContext();
-  const { user } = useAuth();
-const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const navigate = useNavigate()
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   useEffect(() => {
-    loadMyStories();
-  }, []);
-const loadMyStories = async () => {
+    loadMyStories()
+  }, [])
+
+  const loadMyStories = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true)
+      setError("")
       // Mock: Get all stories and filter by "current user"
-      const allStories = await storyService.getAll();
+      const allStories = await storyService.getAll()
       // In a real app, this would filter by actual user ID
-      const myStories = allStories.slice(0, 3); // Mock user stories
-      setStories(myStories);
+      const myStories = allStories.slice(0, 3) // Mock user stories
+      setStories(myStories)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-};
+  }
 
   const handleDeleteStory = async (storyId) => {
     if (!window.confirm("Are you sure you want to delete this story? This action cannot be undone.")) {
-      return;
+      return
     }
+
     try {
-      await storyService.delete(storyId);
-      setStories(prev => prev.filter(story => story.Id !== storyId));
-      toast.success("Story deleted successfully");
+      await storyService.delete(storyId)
+      setStories(prev => prev.filter(story => story.Id !== storyId))
+      toast.success("Story deleted successfully")
     } catch (err) {
-      toast.error("Failed to delete story");
+      toast.error("Failed to delete story")
     }
-};
+  }
 
   const getStatusBadge = (story) => {
     if (story.status === "completed") {
-      return <Badge variant="success" size="sm">Completed</Badge>;
+      return <Badge variant="success" size="sm">Completed</Badge>
     }
     if (story.chapterCount === 0) {
-      return <Badge variant="warning" size="sm">Draft</Badge>;
+      return <Badge variant="warning" size="sm">Draft</Badge>
     }
-    return <Badge variant="primary" size="sm">Ongoing</Badge>;
-  };
+    return <Badge variant="primary" size="sm">Ongoing</Badge>
+  }
+
   if (loading) {
     return <Loading type="page" />
   }
@@ -282,7 +282,7 @@ const loadMyStories = async () => {
         </div>
       </div>
     </div>
-);
-};
+  )
+}
 
-export default Write;
+export default Write
