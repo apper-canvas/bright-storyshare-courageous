@@ -10,7 +10,7 @@ const NotificationBadge = () => (
   <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
 );
 
-const Header = ({ onLogout = () => console.warn('onLogout handler not provided') }) => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
@@ -60,7 +60,7 @@ const navItems = [
             {navItems.map((item) => (
               <Link
                 key={item.path}
-                to={item.path === "" ? "/discover" : `/${item.path}`}
+                to={item.path === "" ? "/" : `/${item.path}`}
                 className={cn(
                   "px-4 py-2 rounded-lg font-ui font-medium transition-all duration-200 relative",
                   isActive(item.path, item.exact)
@@ -82,7 +82,7 @@ const navItems = [
           </div>
 
           {/* Desktop Actions */}
-<div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <Button
               variant="primary"
               onClick={() => navigate("/write/new")}
@@ -90,14 +90,6 @@ const navItems = [
             >
               <ApperIcon name="Plus" size={16} />
               New Story
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onLogout}
-              className="inline-flex items-center gap-2"
-            >
-              <ApperIcon name="LogOut" size={16} />
-              Logout
             </Button>
           </div>
 
@@ -122,7 +114,7 @@ const navItems = [
               {navItems.map((item) => (
                 <Link
                   key={item.path}
-                  to={item.path === "" ? "/discover" : `/${item.path}`}
+                  to={item.path === "" ? "/" : `/${item.path}`}
                   onClick={() => setIsMenuOpen(false)}
                   className={cn(
                     "block px-4 py-3 rounded-lg font-ui font-medium transition-all duration-200 relative",
@@ -145,7 +137,7 @@ const navItems = [
               ))}
             </nav>
             
-<div className="mt-6 pt-4 border-t border-surface space-y-2">
+            <div className="mt-6 pt-4 border-t border-surface">
               <Button
                 variant="primary"
                 onClick={() => {
@@ -156,17 +148,6 @@ const navItems = [
               >
                 <ApperIcon name="Plus" size={16} />
                 New Story
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onLogout()
-                  setIsMenuOpen(false)
-                }}
-                className="w-full inline-flex items-center justify-center gap-2"
-              >
-                <ApperIcon name="LogOut" size={16} />
-                Logout
               </Button>
             </div>
           </div>

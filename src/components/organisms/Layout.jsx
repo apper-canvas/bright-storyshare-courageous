@@ -1,19 +1,29 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import Header from "@/components/organisms/Header";
-import { useAuth } from "@/layouts/Root";
+import React from "react"
+import { Outlet } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
+import Header from "@/components/organisms/Header"
 
 const Layout = () => {
-  const { user } = useSelector((state) => state.user)
-  const { logout } = useAuth()
-  
   return (
     <div className="min-h-screen bg-background">
-      <Header user={user} onLogout={logout} />
-      <main className="container mx-auto px-4 py-6">
+      <Header />
+      <main>
         <Outlet />
       </main>
+      
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        className="toast-container"
+        style={{ zIndex: 9999 }}
+      />
     </div>
   )
 }
