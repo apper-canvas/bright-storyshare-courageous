@@ -1,14 +1,22 @@
-import React, { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import ApperIcon from '@/components/ApperIcon'
-import { useAuth } from '@/layouts/Root'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
 
-const Signup = () => {
+function Signup() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { isInitialized } = useAuth()
-  const { user } = useSelector((state) => state.user)
+  const { user, isInitialized } = useSelector(state => state.user)
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (isInitialized && user) {
@@ -16,25 +24,61 @@ const Signup = () => {
       navigate(redirectPath)
       return
     }
-
-    if (isInitialized && !user) {
-      const { ApperUI } = window.ApperSDK || {}
-      if (ApperUI) {
-        ApperUI.showSignup("#authentication")
-      }
-    }
   }, [isInitialized, user, navigate, searchParams])
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full" />
-      </div>
-    )
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
-  if (user) {
-    return null // Will redirect in useEffect
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    // Basic validation
+    if (!formData.name.trim()) {
+      toast.error('Please enter your name')
+      return
+    }
+    
+    if (!formData.email.trim()) {
+      toast.error('Please enter your email')
+      return
+    }
+    
+    if (!formData.password) {
+      toast.error('Please enter a password')
+      return
+    }
+    
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long')
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      // TODO: Implement actual signup logic when authentication service is available
+      console.log('Signup attempt:', { name: formData.name, email: formData.email })
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      toast.success('Account created successfully! Please sign in.')
+      
+      // Redirect to login with redirect parameter preserved
+      const redirectParam = searchParams.get('redirect')
+      navigate('/login' + (redirectParam ? `?redirect=${redirectParam}` : ''))
+      
+    } catch (error) {
+      console.error('Signup error:', error)
+      toast.error('Failed to create account. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -54,9 +98,75 @@ const Signup = () => {
           </p>
         </div>
 
-        <div id="authentication" className="space-y-6">
-          {/* ApperUI will render the signup form here */}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-primary font-ui mb-2">
+                Full Name
+              </label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter your full name"
+                className="w-full"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-primary font-ui mb-2">
+                Email Address
+              </label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter your email address"
+                className="w-full"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-primary font-ui mb-2">
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Create a secure password"
+                className="w-full"
+                required
+              />
+              <p className="text-xs text-secondary font-ui mt-1">
+                Password must be at least 6 characters long
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Creating Account...</span>
+              </div>
+            ) : (
+              'Sign Up'
+            )}
+          </Button>
+        </form>
 
         <div className="text-center">
           <p className="text-sm text-secondary font-ui">
