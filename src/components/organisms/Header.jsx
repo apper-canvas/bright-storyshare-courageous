@@ -83,7 +83,15 @@ const navItems = [
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-3">
+<div className="hidden lg:flex items-center gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => navigate("/plan")}
+              className="inline-flex items-center gap-2"
+            >
+              <ApperIcon name="CreditCard" size={16} />
+              My Plan
+            </Button>
             <Button
               variant="primary"
               onClick={() => navigate("/write/new")}
@@ -138,7 +146,18 @@ const navItems = [
               ))}
             </nav>
             
-            <div className="mt-6 pt-4 border-t border-surface">
+<div className="mt-6 pt-4 border-t border-surface">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  navigate("/plan")
+                  setIsMenuOpen(false)
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 mb-3"
+              >
+                <ApperIcon name="CreditCard" size={16} />
+                My Plan
+              </Button>
               <Button
                 variant="primary"
                 onClick={() => {
