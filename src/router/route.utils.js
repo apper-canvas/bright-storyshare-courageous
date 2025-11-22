@@ -5,7 +5,7 @@ const customFunctions = {}
 
 export function getRouteConfig(path) {
   try {
-    const routes = require('./routes.json')
+import routes from './routes.json'
     
     // Find matching route using pattern matching
     const matchingRoutes = Object.entries(routes)
