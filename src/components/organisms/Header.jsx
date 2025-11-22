@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/layouts/Root";
-import { cn } from "@/utils/cn";
+import NotificationBadge from "@/components/atoms/NotificationBadge";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Avatar from "@/components/atoms/Avatar";
 import Badge from "@/components/atoms/Badge";
+import Login from "@/components/pages/Login";
 import SearchBar from "@/components/molecules/SearchBar";
-import NotificationBadge from "@/components/atoms/NotificationBadge";
+import { cn } from "@/utils/cn";
+import { useAuth } from "@/layouts/Root";
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -52,9 +53,8 @@ const isActive = (path, exact = false) => {
               </p>
             </div>
           </Link>
-
-          {/* Desktop Navigation */}
-<nav className="hidden lg:flex items-center space-x-1">
+{/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -74,12 +74,12 @@ const isActive = (path, exact = false) => {
             ))}
           </nav>
 
-          {/* Search Bar - Desktop */}
+{/* Search Bar - Desktop */}
           <div className="hidden md:block flex-1 max-w-md">
             <SearchBar onSearch={handleSearch} />
           </div>
 
-{/* Desktop Actions */}
+          {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -148,9 +148,9 @@ const isActive = (path, exact = false) => {
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
+{isMenuOpen && (
           <div className="lg:hidden mt-4 py-4 border-t border-surface">
-<nav className="space-y-2">
+            <nav className="space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
@@ -162,11 +162,11 @@ const isActive = (path, exact = false) => {
                       ? "bg-accent text-white shadow-md"
                       : "text-secondary hover:text-primary hover:bg-surface"
                   )}
-                >
+>
                   <div className="flex items-center gap-3">
-<ApperIcon 
+                    <ApperIcon 
                       name={item.path === "" ? "Compass" : item.path === "library" ? "Library" : item.path === "following" ? "Users" : item.path === "notifications" ? "Bell" : "PenTool"} 
-                      size={20} 
+                      size={20}
                     />
                     {item.label}
                     {item.path === "notifications" && (
@@ -175,9 +175,9 @@ const isActive = (path, exact = false) => {
                   </div>
                 </Link>
               ))}
-            </nav>
+</nav>
             
-<div className="mt-6 pt-4 border-t border-surface space-y-3">
+            <div className="mt-6 pt-4 border-t border-surface space-y-3">
               {isAuthenticated ? (
                 <>
                   <Button
